@@ -270,7 +270,15 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
 
 
     /* run assembly */
-    run_Assembly(opts->runassembly, opts->cpu, cut_seq, opts->output_file, opts->mi, opts->ml, opts->mem, genomesize_bp); //*
+    char* dir_pmat = dirname(strdup(exe_path));
+    char sif_path[4096];
+    snprintf(sif_path, sizeof(sif_path), "%s/container/runAssembly.sif", dir_pmat);
+    free(dir_pmat);
+    if (is_file(sif_path) == 0) {
+        log_message(ERROR, "Failed to find container: %s", sif_path);
+        exit(EXIT_FAILURE);
+    }
+    run_Assembly(sif_path, opts->cpu, cut_seq, opts->output_file, opts->mi, opts->ml, opts->mem, genomesize_bp); //*
 
     char* assembly_fna = malloc(strlen(opts->output_file) + strlen("/assembly_result/PMATAllContigs.fna") + 1);
     char* assembly_graph = malloc(strlen(opts->output_file) + strlen("/assembly_result/PMATContigGraph.txt") + 1);

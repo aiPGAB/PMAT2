@@ -200,7 +200,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     int tm = 0;
     while(1)
     {
-        if (go_flag != 1 || tm > 3) break;
+        if (go_flag != -2 || tm > 3) break;
         float subsize = 0.7;
 
         char* new_cut_seq = malloc(strlen(assembly_seq) + strlen(".bak") + 1);
@@ -246,6 +246,12 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
         rmdir(sff_dir);
         
     } else {
+        remove_prefix_files(runAssembly_output, "454");
+        
+        char* sff_dir = malloc(runAssembly_output_len + 100);
+        snprintf(sff_dir, runAssembly_output_len + 100, "%s/sff", runAssembly_output);
+        rmdir(sff_dir);
+        
         clean_directory(runAssembly_output);
         log_message(ERROR, "The assembly failed.");
         exit(EXIT_FAILURE);
@@ -276,7 +282,7 @@ int remove_dir(const char *path) {
     }
 
     while ((entry = readdir(dir)) != NULL) {
-        char full_path[1024];
+        char full_path[4096];
 
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
@@ -303,14 +309,13 @@ int remove_dir(const char *path) {
 void remove_prefix_files(const char *dir, const char *prefix) {
     DIR *dirp = opendir(dir);
     if (!dirp) {
-        log_message(ERROR, "Failed to open directory: %s", dir);
         return;
     }
 
     struct dirent *entry;
     while ((entry = readdir(dirp)) != NULL) {
         if (strncmp(entry->d_name, prefix, strlen(prefix)) == 0) {
-            char filepath[1024];
+            char filepath[4096];
             snprintf(filepath, sizeof(filepath), "%s/%s", dir, entry->d_name);
             remove_file(filepath);
         }
@@ -322,13 +327,12 @@ void remove_prefix_files(const char *dir, const char *prefix) {
 void clean_directory(const char *dir) {
     DIR *dirp = opendir(dir);
     if (!dirp) {
-        log_message(ERROR, "Failed to open directory: %s", dir);
         return;
     }
 
     struct dirent *entry;
     while ((entry = readdir(dirp)) != NULL) {
-        char filepath[1024];
+        char filepath[4096];
 
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;

@@ -46,6 +46,7 @@ int remove_quote(const char *str); /* remove quotes in string */
 int findstr(const char* array[], int size, char* target); /* return index of target in array, -1 if not found */
 int findint(const int array[], int array_size, int target); /* return index of target in array, -1 if not found */
 char* abspath(const char *path);                /* return absolute path */
+char* pmat_path(const char *input);             /* return path of PMAT2 */
 int is_numeric(const char *str);                /* check if string is numeric */ 
 
 void mkdirfiles(const char *dir_path);          /* create directory and all intermediate directories if not exist */

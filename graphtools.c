@@ -487,11 +487,20 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     char rawgfa[rawgfa_out_len];
     snprintf(rawgfa, rawgfa_out_len, "%s/PMAT_%s_raw.gfa", gfa_output, organelles_type);
 
+    size_t rawfa_len = strlen(gfa_output) + strlen("/gfa_ty.fa") + 1;
+    char rawfa[rawfa_len];
+    snprintf(rawfa, rawfa_len, "%s/gfa_%s.fa", gfa_output, organelles_type);
+
 
     /* raw graph */
     FILE* fprawgfa = fopen(rawgfa, "w");
+    FILE* fprawfa = fopen(rawfa, "w");
     if (fprawgfa == NULL) {
         log_message(ERROR, "Failed to open rawgfa file %s", rawgfa);
+        exit(EXIT_FAILURE);
+    }
+    if (fprawfa == NULL) {
+        log_message(ERROR, "Failed to open rawfa file %s", rawfa);
         exit(EXIT_FAILURE);
     }
     log_message(INFO, "Raw seeds (%s): %d", organelles_type, num_dynseeds);
@@ -503,6 +512,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
             for (int j = 0; j < num_dynseeds; j++) {
                 if (seed == fnainfos[j].ctg) {
                     fprintf(fprawgfa, "S\t%d\t%s\tLN:i:%d\tRC:i:%d\n", seed, fnainfos[j].seq, ctgdepth[seed - 1].len, ctg_RC);
+                    fprintf(fprawfa, ">%d Len:%d Dep:%.2f\n%s\n", seed, ctgdepth[seed - 1].len, ctgdepth[seed - 1].depth, fnainfos[j].seq);
                 }
             }
         }
@@ -527,6 +537,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
         log_message(WARNING, "No raw seeds found.");
     }
     fclose(fprawgfa);
+    fclose(fprawfa);
 
 
 

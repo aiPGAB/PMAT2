@@ -81,6 +81,45 @@ char* abspath(const char *path) {
     return absolute_path;
 }
 
+/* get the software path from an environment variable or a path */
+char* pmat_path(const char *prog_name) {
+    char *resolved_path = NULL;
+
+    if (strchr(prog_name, '/')) {
+        resolved_path = realpath(prog_name, NULL);
+        if (!resolved_path) {
+            log_message(ERROR, "Error resolving path '%s': %s", prog_name, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+        return resolved_path;
+    }
+
+    const char *path_env = getenv("PATH");
+    if (!path_env) {
+        log_message(ERROR, "PATH environment variable not set");
+        return NULL;
+    }
+
+    char *paths = strdup(path_env);
+    char *dir = strtok(paths, ":");
+
+    while (dir) {
+        char pmat_path[4098];
+        snprintf(pmat_path, sizeof(pmat_path), "%s/%s", dir, prog_name);
+        char pmat_c[4098];
+        snprintf(pmat_c, sizeof(pmat_c), "%s/PMAT.c", dir);
+
+        if (access(pmat_path, X_OK) == 0 && access(pmat_c, F_OK) == 0) {
+            resolved_path = realpath(pmat_path, NULL);
+            break;
+        }
+
+        dir = strtok(NULL, ":");
+    }
+
+    free(paths);
+    return resolved_path;
+}
 
 /* convert a string to lower case */
 void to_lower(char *str) {
@@ -436,8 +475,9 @@ void execute_command(const char* command, int verbose, int log_output) {
                 for (size_t i = 0; i < bytes_read; i++) {
                     if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
                         line_buffer[line_buffer_pos] = '\0';
-                        if (strstr(line_buffer, "Warning: [blastn] Examining 5 or more matches is recommended") == NULL && 
-                            strstr(line_buffer, "Warning: [blastn] Query is Empty") == NULL &&
+                        if (strstr(line_buffer, "Warning: [blastn]") == NULL && 
+                        // if (strstr(line_buffer, "Warning: [blastn] Examining 5 or more matches is recommended") == NULL && 
+                            // strstr(line_buffer, "Warning: [blastn] Query is Empty") == NULL &&
                             strstr(line_buffer, "v3.0 (20140410_1040)") == NULL &&
                             strstr(line_buffer, "GenomeScope analyzing") == NULL &&
                             strstr(line_buffer, "Model converged") == NULL) {
@@ -534,7 +574,7 @@ int ass_command(const char* command, int verbose, int log_output) {
                         if (strstr(line_buffer, "v3.0 (20140410_1040)") == NULL &&
                             strstr(line_buffer, "Warning:  No quality scores file found.") == NULL) {
                             if (strstr(line_buffer, "chord->getLength()") != NULL) {
-                                return 1;
+                                return -2;
                             }
                             // Remove CR characters
                             char* cr = strchr(line_buffer, '\r');
@@ -574,7 +614,7 @@ int ass_command(const char* command, int verbose, int log_output) {
             int exit_status = WEXITSTATUS(status);
             if (exit_status != 0) {
                 log_message(ERROR, "Command failed with status: %d", exit_status);
-                return -1;
+                return exit_status;
             }
         } else {
             log_message(ERROR, "Command did not exit normally");

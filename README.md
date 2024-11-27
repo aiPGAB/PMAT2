@@ -90,17 +90,16 @@ Optional options:
 Run `PMAT autoMito --help` to view the usage guide.
 
 ```
-Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [-r RUNASSEMBLY] [options]
+Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [options]
 Example:
-       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -r runAssembly.sif -t hifi -m -T 8
-       PMAT autoMito -i ont.fastq.gz -o ont_assembly -r runAssembly.sif -t ont -S nextdenovo -C canu -N nextdenovo
-       PMAT autoMito -i clr.fastq.gz -o clr_assembly -r runAssembly.sif -t clr -S canu -C canu
+       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -t hifi -m -T 8
+       PMAT autoMito -i ont.fastq.gz -o ont_assembly -t ont -S nextdenovo -C canu -N nextdenovo
+       PMAT autoMito -i clr.fastq.gz -o clr_assembly -t clr -S canu -C canu
 
 Required options:
    -i, --input          Input sequence file (fasta/fastq)
    -o, --output         Output directory
    -t, --seqtype        Sequence type (hifi/ont/clr)
-   -r, --runAssembly    Path of runAssembly.sif
 
 Optional options:
    -k, --kmer           kmer size for estimating genome size (default: 31)
@@ -124,9 +123,8 @@ Optional options:
 **Notes**:
 1. Make sure BLASTn was installed in PATH.
 2. If you want to use nextdenovo for ONT/CLR error correction, you can skip providing a cfg file, and the program will generate a temporary cfg file automatically.
-3. `-r`: Need to download [**runAssembly.sif**](https://github.com/aiPGAB/runAssembly/blob/main/runAssembly.sif).
-4. `-k`: If seqtype is hifi, skip kmer frequency estimation and genome size estimation.
-5. `-m`: Keep sequence data in memory to speed up computation.
+3. `-k`: If seqtype is hifi, skip kmer frequency estimation and genome size estimation.
+4. `-m`: Keep sequence data in memory to speed up computation.
 
 
 ### <a name="C5">graphBuild</a>
@@ -170,7 +168,7 @@ wget https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Arabidopsis_tha
 ```
 2. then run the autoMito command for one-click assembly:
 ```sh
-PMAT autoMito -i Arabidopsis_thaliana_550Mb.fa.gz -o ./test1 -t hifi -m -r path/runAssembly.sif
+PMAT autoMito -i Arabidopsis_thaliana_550Mb.fa.gz -o ./test1 -t hifi -m
 ```
 3. then use the graphBuild command to manually select seeds for assembly (used when the autoMito command fails to get a GFA file automatically):
 ```sh
@@ -187,7 +185,7 @@ wget https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Malus_domestica
 ```
 2. then run the autoMito command for one-click assembly:
 ```sh
-PMAT autoMito -i Malus_domestica.540Mb.fasta.gz -o ./test3 -t hifi -m -r path/runAssembly.sif
+PMAT autoMito -i Malus_domestica.540Mb.fasta.gz -o ./test3 -t hifi -m
 ```
 3. then use the graphBuild command to manually select seeds for assembly (used when the autoMito command fails to get gfa automatically):
 ```sh
@@ -204,7 +202,7 @@ ascp -v -QT -l 400m -P33001 -k1 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openss
 ```
 2. then run the autoMito command for one-click assembly (CLR):
 ```sh
-PMAT autoMito -i SRR2912756_subreads.fastq.gz -o ./test_clr -t clr -N path/nextDenovo -m -r path/runAssembly.sif
+PMAT autoMito -i SRR2912756_subreads.fastq.gz -o ./test_clr -t clr -N path/nextDenovo -m
 ```
 
 **<a name="C6.4">Demo4</a>**
@@ -215,7 +213,7 @@ ascp -v -QT -l 400m -P33001 -k1 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openss
 ```
 2. then run the autoMito command for one-click assembly (ONT):
 ```sh
-PMAT autoMito -i SRR12202038_1.fastq.gz -o ./test_ont -t ont -S canu -C path/canu -m -r path/runAssembly.sif
+PMAT autoMito -i SRR12202038_1.fastq.gz -o ./test_ont -t ont -S canu -C path/canu -m
 ```
 
 

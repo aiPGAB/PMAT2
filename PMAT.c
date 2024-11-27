@@ -86,15 +86,14 @@ void autoMito_usage() {
         "Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [-r RUNASSEMBLY] [options]\n"
         "Example:\n"
         "       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -r runAssembly.sif -t hifi -m -T 8\n"
-        "       PMAT autoMito -i ont.fastq.gz -o ont_assembly -r runAssembly.sif -t ont -S nextdenovo -C canu -N nextdenovo\n"
-        "       PMAT autoMito -i clr.fastq.gz -o clr_assembly -r runAssembly.sif -t clr -S canu -C canu\n\n"
+        "       PMAT autoMito -i ont.fastq.gz -o ont_assembly -t ont -S nextdenovo -C canu -N nextdenovo\n"
+        "       PMAT autoMito -i clr.fastq.gz -o clr_assembly -t clr -S canu -C canu\n\n"
         
 
         "Required options:\n"
         "   -i, --input          Input sequence file (fasta/fastq)\n"
         "   -o, --output         Output directory\n"
         "   -t, --seqtype        Sequence type (hifi/ont/clr)\n"
-        "   -r, --runAssembly    Path of runAssembly.sif\n"
         "\n"
 
         "Optional options:\n"
@@ -153,7 +152,6 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         {"input", 1, 0, 'i'},
         {"output", 1, 0, 'o'},
         {"seqtype", 1, 0, 't'},
-        {"runAssembly", 1, 0, 'r'},
         {"kmer", 1, 0, 'k'},
         {"genomesize", 1, 0, 'g'},
         {"task", 1, 0, 'p'},
@@ -176,14 +174,13 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
     };
 
     while (1) {
-        int c = getopt_long(argc, argv, ":i:o:t:r:k:g:p:x:S:C:N:n:F:D:K:I:L:T:mhv", long_options, &option_index);
+        int c = getopt_long(argc, argv, ":i:o:t:k:g:p:x:S:C:N:n:F:D:K:I:L:T:mhv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
             case 'i': opts->input_file = optarg; break;
             case 'o': opts->output_file = optarg; break;
             case 't': opts->seqtype = optarg; break;
-            case 'r': opts->runassembly = optarg; break;
             case 'k': opts->kmersize = atoi(optarg); break;
             case 'g': 
                 if (optind < argc && argv[optind][0] != '-') {
@@ -212,7 +209,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
             default: log_message(ERROR, "Invalid option: %c", c); autoMito_usage(); exit(EXIT_FAILURE);
         }
     }
-    if (opts->input_file == NULL || opts->output_file == NULL || opts->seqtype == NULL || opts->runassembly == NULL) {
+    if (opts->input_file == NULL || opts->output_file == NULL || opts->seqtype == NULL) {
         log_message(ERROR, "Missing required options");
         autoMito_usage();
         exit(EXIT_FAILURE);
@@ -220,11 +217,6 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
     
     if (is_file(opts->input_file) == 0) {
         log_message(ERROR, "Input file does not exist: %s", opts->input_file);
-        autoMito_usage();
-        exit(EXIT_FAILURE);
-    }
-    if (is_file(opts->runassembly) == 0) {
-        log_message(ERROR, "runAssembly.sif does not exist: %s", opts->runassembly);
         autoMito_usage();
         exit(EXIT_FAILURE);
     }
@@ -449,7 +441,13 @@ void graphBuild_arguments(int argc, char *argv[], graphBuildArgs *args) {
 
 int main(int argc, char *argv[]) {
     
-    char *exe_path = realpath(argv[0], NULL);
+    // char *exe_path = realpath(argv[0], NULL);
+    // printf("exe_path: %s\n", exe_path);
+    char *exe_path = pmat_path(argv[0]);
+    if (!exe_path) {
+        log_message(ERROR, "Failed to resolve executable path");
+        exit(EXIT_FAILURE);
+    }
 
     if (argc >= 2) 
     {
