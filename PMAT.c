@@ -101,7 +101,7 @@ void autoMito_usage() {
         "   -g, --genomesize     Genome size (g/m/k), skip genome size estimation if set\n"
         "   -p, --task           Task type (0/1), skip error correction for ONT/CLR by selecting 0, otherwise 1 (default: 1)\n"
         // "   -G, --organelles     Genome organelles (mt: mitochondria/pt: plastid/all, default: mt)\n"
-        "   -x, --taxo           Specify the organism type (0/1), 0: plants, 1: animals (default: 0)\n"
+        "   -x, --taxo           Specify the organism type (0/1/2), 0: plants, 1: animals, 2: Fungi (default: 0)\n"
         "   -S, --correctsoft    Error correction software (canu/nextdenovo, default: nextdenovo)\n"
         "   -C, --canu           Canu path\n"
         "   -N, --nextdenovo     NextDenovo path\n"
@@ -135,7 +135,7 @@ void graphBuild_usage() {
 
         "Optional options:\n"
         "   -G, --organelles    Genome organelles (mt: mitochondria/pt: plastid, default: mt)\n"
-        "   -x, --taxo          Specify the organism type (0/1), 0: plants, 1: animals (default: 0)\n"
+        "   -x, --taxo          Specify the organism type (0/1), 0: plants, 1: animals, 2: Fungi (default: 0)\n"
         "   -d, --depth         Contig depth threshold\n"
         "   -s, --seeds         ContigID for extending. Multiple contigIDs should be separated by space. For example: 1 312 356\n"
         "   -T, --cpu           Number of threads (default: 8)\n"
@@ -221,7 +221,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         exit(EXIT_FAILURE);
     }
 
-    if (opts->taxo != 0 && opts->taxo != 1) {
+    if (opts->taxo != 0 && opts->taxo != 1 && opts->taxo != 2) {
         log_message(ERROR, "Invalid taxo type: %d", opts->taxo);
         exit(EXIT_FAILURE);
     }
@@ -426,7 +426,7 @@ void graphBuild_arguments(int argc, char *argv[], graphBuildArgs *args) {
         args->organelles = strdup("mt");
     }
 
-    if (args->taxo != 0 && args->taxo != 1) {
+    if (args->taxo != 0 && args->taxo != 1 && args->taxo != 2) {
         log_message(ERROR, "Invalid taxo type: %d", args->taxo);
         exit(EXIT_FAILURE);
     } else if (args->taxo == 1) {
@@ -487,6 +487,7 @@ int main(int argc, char *argv[]) {
             optgraph.depth = -1;
             optgraph.seeds = NULL;
             optgraph.seedCount = 0;
+            optgraph.taxo = 0;
             optgraph.cpu = 8;
 
             graphBuild_arguments(argc - 1, argv + 1, &optgraph);

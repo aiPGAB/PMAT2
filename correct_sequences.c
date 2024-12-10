@@ -39,7 +39,7 @@ SOFTWARE.
 
 static void canu_trim(const char* canu_path, const char* input_seq, int genomeSize, const char* output_dir, const char* readstype, int cpu);
 static void config_info(const char* cfgr, const char* cfgw, char* workdir, int cfg_flag, char* readstype, char* input_fofn, int genomeSize, int cpu);
-
+static void cns_files(const char* cns_dir, const char* output_file);
 
 void canu_correct(const char* canu_path, const char* input_seq, int genomeSize, const char* output_dir, const char* readstype, int cpu) {
     log_message(INFO, "Start canu correction...");
@@ -130,41 +130,15 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path, cons
     size_t corrected_reads_path_len = snprintf(NULL, 0, "%s/PMAT.correctedReads.fasta", output_correct) + 1;
     char* corrected_reads_path = malloc(corrected_reads_path_len);
     snprintf(corrected_reads_path, corrected_reads_path_len, "%s/PMAT.correctedReads.fasta", output_correct);
-    FILE* fp = fopen(corrected_reads_path, "w");
 
-    if (fp == NULL) {
-        log_message(ERROR, "Failed to open corrected reads file: %s", corrected_reads_path);
-        free(output_correct);
-        free(corrected_reads_path);
-        exit(EXIT_FAILURE);
-    } else {
-        for (int i = 1; i < 4; i++) {
-            size_t cns_path_len = snprintf(NULL, 0, "%s/02.cns_align/01.seed_cns.sh.work/seed_cns%d/cns.fasta", output_correct, i) + 1;
-            char* cns_path = malloc(cns_path_len);
-            snprintf(cns_path, cns_path_len, "%s/02.cns_align/01.seed_cns.sh.work/seed_cns%d/cns.fasta", output_correct, i);
-            checkfile(cns_path);
-            
-            FILE* cns_file = fopen(cns_path, "r");
-            if (cns_file == NULL) {
-                log_message(ERROR, "Failed to open cns file: %s", cns_path);
-                free(cns_path);
-                free(output_correct);
-                free(corrected_reads_path);
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            } else {
-                char* line = NULL;
-                size_t line_len = 0;
-                while (getline(&line, &line_len, cns_file) != -1) {
-                    fputs(line, fp);
-                }
-                free(line);
-                fclose(cns_file);
-            }
-            free(cns_path);
-        }
-    }
-    fclose(fp);
+    size_t cns_path_len = snprintf(NULL, 0, "%s/02.cns_align/01.seed_cns.sh.work", output_correct) + 1;
+    char* cns_path = malloc(cns_path_len);
+    snprintf(cns_path, cns_path_len, "%s/02.cns_align/01.seed_cns.sh.work", output_correct);
+    checkfile(cns_path);
+    
+    cns_files(cns_path, corrected_reads_path);
+    free(cns_path);
+
     log_message(INFO, "nextdenovo correction done.");
 
     // canu_trim(canu_path, corrected_reads_path, genomeSize, output_abs, seqtype, cpu);
@@ -172,6 +146,58 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path, cons
     free(corrected_reads_path);
     free(output_correct);
 
+}
+
+static void cns_files(const char* cns_dir, const char* output_file) {
+    struct dirent* entry;
+    DIR* dp = opendir(cns_dir);
+
+    if (dp == NULL) {
+        log_message(ERROR, "Failed to open cns directory: %s", cns_dir);
+        exit(EXIT_FAILURE);
+    }
+
+    FILE* fp = fopen(output_file, "w");
+    if (fp == NULL) {
+        log_message(ERROR, "Failed to open output file: %s", output_file);
+        closedir(dp);
+        exit(EXIT_FAILURE);
+    }
+
+    while ((entry = readdir(dp)) != NULL) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue; // Skip current and parent directories
+        }
+
+        // Construct full path
+        char full_path[4046];
+        snprintf(full_path, sizeof(full_path), "%s/%s", cns_dir, entry->d_name);
+
+        struct stat statbuf;
+        if (stat(full_path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode)) {
+
+            char cns_path[4096];
+            snprintf(cns_path, sizeof(cns_path), "%s/cns.fasta", full_path);
+
+            FILE* cns_file = fopen(cns_path, "r");
+            if (cns_file == NULL) {
+                log_message(WARNING, "Failed to open cns file: %s", cns_path);
+                continue;
+            }
+
+            char* line = NULL;
+            size_t line_len = 0;
+            while (getline(&line, &line_len, cns_file) != -1) {
+                fputs(line, fp);
+            }
+
+            free(line);
+            fclose(cns_file);
+        }
+    }
+
+    fclose(fp);
+    closedir(dp);
 }
 
 
@@ -250,7 +276,9 @@ static void config_info(const char* cfgr, const char* cfgw, char* workdir, int c
             if (strncmp(line, "read_type", 9) == 0) {
                 fprintf(fout, "read_type = %s\n", readstype);
             } else if (strncmp(line, "parallel_jobs", 13) == 0) {
-                fprintf(fout, "parallel_jobs = %d\n", cpu);
+                fprintf(fout, "parallel_jobs = %d\n", cpu/3);
+            } else if (strncmp(line, "correction_options", 18) == 0) {
+                fprintf(fout, "correction_options = -p %d\n", cpu/3);
             } else if (strncmp(line, "input_fofn", 10) == 0) {
                 fprintf(fout, "input_fofn = %s\n", input_fofn);
             } else if (strncmp(line, "workdir", 7) == 0) {

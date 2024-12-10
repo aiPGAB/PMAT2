@@ -680,7 +680,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                         }
                     }
 
-                } else if (strcmp(organelles_type, "pt") == 0 || taxo == 1) {
+                } else if (strcmp(organelles_type, "pt") == 0 || taxo == 1 || taxo == 2) {
                     float flag_depth = ctgdepth[(*dynseeds)[0] - 1].depth;
                     for (int j = 0; j < temp_struct->num_nodes; j++) {
                         float temp_depth = ctgdepth[(temp_struct->node[j]) - 1].depth;

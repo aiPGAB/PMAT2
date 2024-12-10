@@ -1,4 +1,4 @@
-# <p name="h1">Special Tips</p>
+# <p name="h1">Contact</p>
 If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
 
 # <p name="h1">PMAT2</p> 
@@ -40,50 +40,11 @@ make
 ## <a name="C2">Requirement</a>
 
 - [**BLASTn**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)  Needs to be installed in `PATH`.
-- [**Singularity**](https://github.com/YanshuQu/runAssembly) or [**Apptainer**](https://github.com/apptainer/blob/main/INSTALL.md) is required for PMAT2. You can find installation instructions [here](https://github.com/YanshuQu/runAssembly).
+- [**Singularity**](https://github.com/YanshuQu/runAssembly) or [**Apptainer**](https://github.com/apptainer/apptainer/blob/main/INSTALL.md) is required for PMAT2. You can find installation instructions [here](https://github.com/YanshuQu/runAssembly).
 - [**Canu > v2.0**](https://github.com/marbl/canu) or [**NextDenovo**](https://github.com/Nextomics/NextDenovo) is required for CLR or ONT sequencing data.
 - [**zlib**](https://www.zlib.net/) Needs to be installed in `PATH`.
 
 ## <a name="C3">Options and usage</a>
-
-Run `PMAT --help` to show the program's usage guide.
-```
-usage: PMAT <command> <arguments>
-
-  ______     ___           __        ____       _____________     
- |   __  \  |   \        /   |      / __ \     |_____   _____| 
- |  |__)  | | |\ \      / /| |     / /  \ \          | |      
- |   ____/  | | \ \    / / | |    / /____\ \         | |      
- |  |       | |  \ \  / /  | |   / /______\ \        | |      
- |  |       | |   \ \/ /   | |  / /        \ \       | |      
- |__|       |_|    \__/    |_| /_/          \_\      |_|       
-
-PMAT2           an efficient assembly toolkit for organellar genome
-Contributors    Bi,C. and Han,F.
-Email           bichwei@njfu.edu.cn, hanfc@caf.ac.cn
-Version         PMAT v2.0.1
-
-For more information about PMAT, see https://github.com/aiPGAB/PMAT2
-
-Commands:
-
-    autoMito    One-step de novo assembly of organellar genomes.    
-                This command processes raw ONT/CLR data or uses     
-                corrected data or HiFi reads for direct assembly.   
-                Based on the assembly result, it automatically      
-                selects seeds for extension and filters false       
-                positives to obtain the complete organellar         
-                genome sequence.                                    
-
-    graphBuild  If the autoMito command fails to generate the   
-                complete organellar genome sequence in one-step 
-                assembly, you can use this command to manually  
-                select seeds for assembly.                      
-
-Optional options:
-   -v, --version   show program's version number and exit
-   -h, --help      show this help message and exit
-```
 
 ### <a name="C4">autoMito</a>
     
@@ -125,6 +86,8 @@ Optional options:
 2. If you want to use nextdenovo for ONT/CLR error correction, you can skip providing a cfg file, and the program will generate a temporary cfg file automatically.
 3. `-k`: If seqtype is hifi, skip kmer frequency estimation and genome size estimation.
 4. `-m`: Keep sequence data in memory to speed up computation.
+5. `-I`: The default value is 40 bp. If the assembly graph is complex, you can increase it appropriately.
+6. `-L`: minimum overlap identity, the default is 90, if it is HiFi data, you can increase it appropriately.
 
 
 ### <a name="C5">graphBuild</a>
@@ -215,6 +178,15 @@ ascp -v -QT -l 400m -P33001 -k1 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openss
 ```sh
 PMAT autoMito -i SRR12202038_1.fastq.gz -o ./test_ont -t ont -S canu -C path/canu -m
 ```
+---
+|Dataset|Size|Options|Run time|Coverage|
+|:-------|:----:|:--------:|:------------:|:-------:|
+|Arabidopsis thaliana|550Mb|`-T 50`|9m08s|4x|
+|Arabidopsis thaliana|550Mb|`-T 50 -m`|9m30s|4x|
+|Malus domestica|540Mb|`-T 50`|7m26s|<1x|
+|Malus domestica|540Mb|`-T 50 -m`|7m35s|<1x|
+|Juncus effusus|216Mb|`-T 50`|4m47s|<1x|
+|Juncus effusus|216Mb|`-T 50 -m`|4m48s|<1x|
 
 
 ## <a name="C7">Resulting files</a>
@@ -243,6 +215,3 @@ Updates:
 ## <a name="C9">Citing PMAT2</a>
 Bi C, Shen F, Han F, Qu Y, et al. PMAT: an efficient plant mitogenome assembly toolkit using ultra-low coverage HiFi sequencing data. Horticulture Research. (2024). uhae023, https://doi.org/10.1093/hr/uhae023. </br>
 Bi C, Qu Y, Hou J, Wu K, Ye N, and Yin T. (2022). Deciphering the multi-chromosomal mitochondrial genome of Populus simonii. Front. Plant Sci. 13:914635.doi:10.3389/fpls.2022.914635.
-## Author
-Changwei Bi, bichwei@njfu.edu.cn  
-Fuchuan Han, hanfc@caf.ac.cn

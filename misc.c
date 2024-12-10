@@ -576,6 +576,10 @@ int ass_command(const char* command, int verbose, int log_output) {
                             if (strstr(line_buffer, "chord->getLength()") != NULL) {
                                 return -2;
                             }
+                            if (strstr(line_buffer, "doAsmAlignment traceback") != NULL) {
+                                log_message(ERROR, "Command did not exit normally");
+                                return -1;
+                            }
                             // Remove CR characters
                             char* cr = strchr(line_buffer, '\r');
                             while (cr != NULL) {

@@ -78,4 +78,6 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
 void AnHitseeds(const char* exe_path, const char* organelles_type, const char* all_contigs, 
              const char* output_path, int num_threads, int num_ctgs, CtgDepth *ctg_depth, int** candidate_seeds, int* ctg_threshold, float filter_depth); 
 
+void FuHitseeds(const char* exe_path, const char* organelles_type, const char* all_contigs, 
+             const char* output_path, int num_threads, int num_ctgs, CtgDepth *ctg_depth, int** candidate_seeds, int* ctg_threshold, float filter_depth);
 #endif

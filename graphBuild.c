@@ -240,8 +240,6 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 free(dynseeds);
             }
         } else if (opts->taxo == 1) {
-            if (strcmp(opts->organelles, "mt") == 0) {
-
                 /* mt */
                 int ctg_threshold = 6;
                 dynseeds = calloc(ctg_threshold, sizeof(int));
@@ -270,8 +268,37 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     free(mainseeds);
                 }
                 free(dynseeds);
+
+        } else if (opts->taxo == 2) {
+                /* mt */
+                int ctg_threshold = 6;
+                dynseeds = calloc(ctg_threshold, sizeof(int));
+                FuHitseeds(exe_path, "mt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &dynseeds, &ctg_threshold, 2*seq_depth);
+                for (int i = 0; i < ctg_threshold; i++) {
+                    if (dynseeds[i] != 0) {
+                        num_dynseeds++;
+                    }
+                }
+                if (num_dynseeds > 0) {
+
+                    if (opts->depth == -1) {
+                        filter_depth = 0.3 * ctgdepth[dynseeds[0] - 1].depth;
+                    } else {
+                        filter_depth = opts->depth;
+                    }
+
+                    DFSlinks* dfslinks = NULL;
+                    int num_DFSlinks = 0;
+                    DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                    int mt_mainseeds_num = 0;
+                    int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
+                    optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
+                    
+                    free(dfslinks);
+                    free(mainseeds);
+                }
+                free(dynseeds);
             }
-        }
 
     } else {
         num_dynseeds = opts->seedCount;
@@ -353,7 +380,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 free(dfslinks);
                 free(mainseeds);
             }
-        } else if (opts->taxo == 1) {
+        } else if (opts->taxo == 1 || opts->taxo == 2) {
             if (strcmp(opts->organelles, "mt") == 0) {
                 if (opts->depth == -1) {
                     filter_depth = 0.3 * ctgdepth[dynseeds[0] - 1].depth;
