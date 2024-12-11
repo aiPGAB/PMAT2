@@ -10,26 +10,21 @@ TARGET := PMAT
 
 EXCLUDE_MAINS := -DHITSEEDS_MAIN -DDFSSEED_MAIN -DSUBSAMPLE_MAIN -DFQ2FA_MAIN -DRUNASSEMBLY_MAIN -DYAK_MAIN
 
-BLUE := \033[1;34m
-GREEN := \033[1;32m
-RED := \033[1;31m
-YELLOW := \033[1;33m
-RESET := \033[0m
 
 .PHONY: all clean
 
 all: info $(TARGET)
-	@echo "$(GREEN)Build complete: $(TARGET)$(RESET)"
+	@echo "Build complete: $(TARGET)"
 
 $(TARGET): $(SOURCES)
-	@echo "$(BLUE)Compiling $(TARGET)...$(RESET)"
+	@echo "Compiling $(TARGET)..."
 	@$(CC) $(CFLAGS) $(EXCLUDE_MAINS) -o $@ $^ $(LIBS)
 
 clean:
 	@rm -f $(TARGET)
 
 info:
-	@echo "$(BLUE)Build Information:$(RESET)"
+	@echo "Build Information:"
 	@echo "  Compiler: $(CC)"
 	@echo "  Libraries: $(LIBS)"
 #	@echo "  Source files: $(SOURCES)"
