@@ -49,6 +49,8 @@ char* abspath(const char *path);                /* return absolute path */
 char* pmat_path(const char *input);             /* return path of PMAT2 */
 int is_numeric(const char *str);                /* check if string is numeric */ 
 
+void sleep_ms(long milliseconds);
+
 void mkdirfiles(const char *dir_path);          /* create directory and all intermediate directories if not exist */
 int delete_directory(const char *path);         /* delete directory recursively */
 void checkfile(const char *dir_path);           /* check if directory exists, create directory if not exist */
@@ -63,7 +65,6 @@ int ass_command(const char* command, int verbose, int log_output);
 int which_executable(const char *exe);          /* return 1 if executable exists, 0 otherwise */
 int validate_fastq_file(const char *filename);  /* check if file is a valid fastq file */
 int validate_fasta_file(const char *filename);  /* check if file is a valid fasta file */
-void check_executable(const char *exe);         /* check if executable exists */
 int is_digits(const char *str);                 /* check if string contains only digits */
 
 void maparr_100(int32_t *data, int size, uint8_t *mapped_data); /* normalize data to 0-100 scale */

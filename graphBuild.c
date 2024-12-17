@@ -57,8 +57,6 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     mkdirfiles(gfa_dir);
     free(gfa_dir);
 
-
-
     /* find seeds */
     FILE *graph_file = fopen(opts->assembly_graph, "r");
     if (graph_file == NULL) {
@@ -66,6 +64,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
         exit(EXIT_FAILURE);
     }
 
+    uint64_t i;
     int num_links = 0;
     size_t len = 0;
     char *line = NULL;
@@ -89,7 +88,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     int ctg_arr[200];
     int ctg_arr_idx = 0;
     int ctglink_idx = 0;
-    int ctg_idx = 0;
+    // int ctg_idx = 0;
     int log_idx = 0;
     int log_len = 0;
     flag_C = 0;
@@ -159,7 +158,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 pt_ctg_threshold = 1;
                 pt_dynseeds = calloc(pt_ctg_threshold, sizeof(int));
                 PtHitseeds(exe_path, "pt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, pt_dynseeds, pt_ctg_threshold, 2*seq_depth);
-                for (int i = 0; i < pt_ctg_threshold; i++) {
+                for (i = 0; i < pt_ctg_threshold; i++) {
                     if (pt_dynseeds[i] != 0) {
                         pt_num_dynseeds++;
                     }
@@ -183,7 +182,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int ctg_threshold = 6;
                 dynseeds = calloc(ctg_threshold, sizeof(int));
                 MtHitseeds(exe_path, "mt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &dynseeds, &ctg_threshold, 1.5*seq_depth);
-                for (int i = 0; i < ctg_threshold; i++) {
+
+                for (i = 0; i < ctg_threshold; i++) {
                     if (dynseeds[i] != 0) {
                         num_dynseeds++;
                     }
@@ -215,7 +215,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int ctg_threshold = 1;
                 dynseeds = calloc(ctg_threshold, sizeof(int));
                 PtHitseeds(exe_path, "pt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, dynseeds, ctg_threshold, 2*seq_depth);
-                for (int i = 0; i < ctg_threshold; i++) {
+                for (i = 0; i < ctg_threshold; i++) {
                     if (dynseeds[i] != 0) {
                         num_dynseeds++;
                     }
@@ -244,7 +244,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int ctg_threshold = 6;
                 dynseeds = calloc(ctg_threshold, sizeof(int));
                 AnHitseeds(exe_path, "mt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &dynseeds, &ctg_threshold, 2*seq_depth);
-                for (int i = 0; i < ctg_threshold; i++) {
+                for (i = 0; i < ctg_threshold; i++) {
                     if (dynseeds[i] != 0) {
                         num_dynseeds++;
                     }
@@ -274,7 +274,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int ctg_threshold = 6;
                 dynseeds = calloc(ctg_threshold, sizeof(int));
                 FuHitseeds(exe_path, "mt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &dynseeds, &ctg_threshold, 2*seq_depth);
-                for (int i = 0; i < ctg_threshold; i++) {
+                for (i = 0; i < ctg_threshold; i++) {
                     if (dynseeds[i] != 0) {
                         num_dynseeds++;
                     }
@@ -303,7 +303,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     } else {
         num_dynseeds = opts->seedCount;
         dynseeds = calloc(num_dynseeds, sizeof(int));
-        for (int i = 0; i < num_dynseeds; i++) 
+        for (i = 0; i < num_dynseeds; i++) 
         {
             if (opts->seeds[i] < 1 || opts->seeds[i] > num_ctg) {
                 log_message(ERROR, "Seed %d is out of range, please check the input seeds.", opts->seeds[i]);
@@ -320,7 +320,7 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 pt_ctg_threshold = 1;
                 pt_dynseeds = calloc(pt_ctg_threshold, sizeof(int));
                 PtHitseeds(exe_path, "pt", opts->assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, pt_dynseeds, pt_ctg_threshold, 2*seq_depth);
-                for (int i = 0; i < pt_ctg_threshold; i++) {
+                for (i = 0; i < pt_ctg_threshold; i++) {
                     if (pt_dynseeds[i] != 0) {
                         pt_num_dynseeds++;
                     }
@@ -402,13 +402,13 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
         }
     }
 
-    for (int i = 0; i < num_ctg; i++) 
+    for (i = 0; i < num_ctg; i++) 
     {
         free(ctgdepth[i].ctg);
     }
     free(ctgdepth);
 
-    for (int i = 0; i < num_links; i++) 
+    for (i = 0; i < num_links; i++) 
     {
         free(ctglinks[i].lutr);
         free(ctglinks[i].rutr);

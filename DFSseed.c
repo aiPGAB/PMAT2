@@ -80,7 +80,8 @@ void DFSseeds(const char* type, int num_links, int num_ctg, Ctglinks* ctglinks, 
     }
     log_info("-------------\n");
     
-    for (int i = 0; i < num_links; i++) {
+    uint64_t i, j;
+    for (i = 0; i < num_links; i++) {
         if (findint(*dynseeds, *num_dynseeds, ctglinks[i].lctg) == 1 && 
             findint(*dynseeds, *num_dynseeds, ctglinks[i].rctg) == 1 &&
             ctglinks[i].linkdepth > 0.3*MIN(ctgdepth[ctglinks[i].lctg - 1].depth, ctgdepth[ctglinks[i].rctg - 1].depth)) 
@@ -105,22 +106,22 @@ void DFSseeds(const char* type, int num_links, int num_ctg, Ctglinks* ctglinks, 
         }
     }
 
-    while (*num_dfslinks > 0) {
+    while (*num_dfslinks > 0 && *num_dynseeds > 0) {
         /* Remove the bubbles （contg length <= 50bp）*/
         khash_t(Ha_node) *node_hash = kh_init(Ha_node);
 
-        for (int i = 0; i < *num_dynseeds; i++) 
+        for (i = 0; i < *num_dynseeds; i++) 
         {
             nodeArr node_arr;
             node_arr.num3 = 0;
             node_arr.num5 = 0;
-            node_arr.node3 = (int*) malloc((*num_dynseeds)*sizeof(int));
-            node_arr.node5 = (int*) malloc((*num_dynseeds)*sizeof(int));
+            node_arr.node3 = (int*) malloc((*num_dynseeds + 1)*sizeof(int));
+            node_arr.node5 = (int*) malloc((*num_dynseeds + 1)*sizeof(int));
 
             int ret;
             khint_t k = kh_put(Ha_node, node_hash, (*dynseeds)[i], &ret);
 
-            for (int j = 0; j < *num_dfslinks; j++) 
+            for (j = 0; j < *num_dfslinks; j++) 
             {
                 if ((*dfslinks)[j].lctgsmp == (*dynseeds)[i]) {
                     if ((*dfslinks)[j].lutrsmp == 3) {
@@ -147,9 +148,10 @@ void DFSseeds(const char* type, int num_links, int num_ctg, Ctglinks* ctglinks, 
             kh_value(node_hash, k) = node_arr;
         }
 
-        int* del_node = (int*) malloc((*num_dynseeds)*sizeof(int));
+        int* del_node = (int*) malloc((*num_dynseeds + 1)*sizeof(int));
         int del_num = 0;
-        for (int i = 0; i < *num_dynseeds; i++) 
+
+        for (i = 0; i < *num_dynseeds; i++) 
         {
             if (ctgdepth[(*dynseeds)[i] - 1].len <= 50) {
                 nodeArr temp_node_arr = kh_value(node_hash, kh_get(Ha_node, node_hash, (*dynseeds)[i]));
@@ -171,19 +173,26 @@ void DFSseeds(const char* type, int num_links, int num_ctg, Ctglinks* ctglinks, 
             }
         }
 
-        for (int i = 0; i < *num_dynseeds; i++) {
+        for (i = 0; i < *num_dynseeds; i++) {
             nodeArr temp_node_arr = kh_value(node_hash, kh_get(Ha_node, node_hash, (*dynseeds)[i]));
-            free(temp_node_arr.node3);
-            free(temp_node_arr.node5);
+            if (temp_node_arr.node3 != NULL) {
+                free(temp_node_arr.node3);
+                temp_node_arr.node3 = NULL;
+            }
+            if (temp_node_arr.node5 != NULL) {
+                free(temp_node_arr.node5);
+                temp_node_arr.node5 = NULL;
+            }
         }
         kh_destroy(Ha_node, node_hash);
 
         if (del_num > 0) {
-            for (int i = 0; i < del_num; i++) 
+            for (i = 0; i < del_num; i++) 
             {
                 remove_element(*dynseeds, num_dynseeds, del_node[i]);
                 int temp_num_dfslinks = 0;
-                for (int j = 0; j < *num_dfslinks; j++) 
+
+                for (j = 0; j < *num_dfslinks; j++) 
                 {
                     if ((*dfslinks)[j].lctgsmp != del_node[i] && (*dfslinks)[j].rctgsmp != del_node[i]) {
                         (*dfslinks)[temp_num_dfslinks] = (*dfslinks)[j];
@@ -211,7 +220,8 @@ static void DFSmain(const char* type, int num_links, int num_ctg, Ctglinks* ctgl
         progress_step = 1;
     }
 
-    for (int i = 0; i < num_links; i++) {
+    uint64_t i;
+    for (i = 0; i < num_links; i++) {
         if (ctgdepth[ctglinks[i].lctg - 1].depth > filter_depth && 
             ctgdepth[ctglinks[i].rctg - 1].depth > filter_depth &&
             ctglinks[i].linkdepth > 0.5*MIN(ctgdepth[ctglinks[i].lctg - 1].depth, ctgdepth[ctglinks[i].rctg - 1].depth)) 
@@ -236,7 +246,7 @@ static void DFSmain(const char* type, int num_links, int num_ctg, Ctglinks* ctgl
         }
         if (i % progress_step == 0) {
             // 1000 * 10000
-            usleep(10*1000);
+            sleep_ms(10);
             log_info("#");
             fflush(stdout);
         }
@@ -258,7 +268,7 @@ int main(int argc, char* argv[]) {
         log_message(ERROR, "Failed to open file %s", all_graph);
         return -1;    
     }    
-
+    uint64_t i;
     FILE *fp = fopen(all_graph, "r");
     if (fp == NULL) {
         log_message(ERROR, "Failed to open file %s", all_graph);
@@ -324,7 +334,8 @@ int main(int argc, char* argv[]) {
     int num_dynseeds = 0;
     int* dynseeds = calloc(6, sizeof(int));
     hitseeds(exe_path, argv[1], argv[3], argv[4], atoi(argv[5]), num_ctg, ctgdepth, dynseeds, 6);
-    for (int i = 0; i < 6; i++) {
+
+    for (i = 0; i < 6; i++) {
         if (dynseeds[i] != 0) {
             num_dynseeds++;
         }
@@ -337,12 +348,12 @@ int main(int argc, char* argv[]) {
     // optgfa(num_dynseeds, &dynseeds, dfslinks, num_DFSlinks, ctgdepth, argv[4], argv[3], all_graph);
 
     /* free memory */
-    for (int i = 0; i < num_ctg; i++) {
+    for (i = 0; i < num_ctg; i++) {
         free(ctgdepth[i].ctg);
     }
     free(ctgdepth);
 
-    for (int i = 0; i < num_links; i++) {
+    for (i = 0; i < num_links; i++) {
         free(ctglinks[i].lutr);
         free(ctglinks[i].rutr);
     }

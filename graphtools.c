@@ -120,8 +120,9 @@ void addseq(const char* allgraph, const char* all_fna, CtgDepth* ctgdepth) {
 static void maingraph(DFSlinks* dfslinks, DFSlinks* mainlinks, CtgDepth* ctg_depth, int num_dynseeds, int num_dfslinks, int* mainseeds, 
                      int* main_num, int* mainseeds_num, int* rm_ctg, int rm_num, float filter_depth) {
 
+    uint64_t i;
     DFSlinks* templinks = malloc(num_dfslinks * sizeof(DFSlinks));
-    for (int i = 0; i < num_dfslinks; i++) {
+    for (i = 0; i < num_dfslinks; i++) {
         copy_DFSlinks(&templinks[i], &dfslinks[i]);
     }
     *main_num = num_dfslinks;
@@ -130,7 +131,7 @@ static void maingraph(DFSlinks* dfslinks, DFSlinks* mainlinks, CtgDepth* ctg_dep
     while(1) {
         *mainseeds_num = 0;
         khash_t(Ha_direct) *map_direct = kh_init(Ha_direct);
-        for (int i = 0; i < *main_num; i++) {
+        for (i = 0; i < *main_num; i++) {
             khint_t k;
             int ret;
             int temp_lctgsmp = templinks[i].lctgsmp;
@@ -192,7 +193,7 @@ static void maingraph(DFSlinks* dfslinks, DFSlinks* mainlinks, CtgDepth* ctg_dep
         removeUnique(mainseeds, mainseeds_num);
 
         flag_num = 0;
-        for (int i = 0; i < *main_num; i++) {
+        for (i = 0; i < *main_num; i++) {
             if (findint(mainseeds, *mainseeds_num, templinks[i].lctgsmp) == 1 &&
                 findint(mainseeds, *mainseeds_num, templinks[i].rctgsmp) == 1 &&
                 findint(rm_ctg, rm_num, templinks[i].lctgsmp) == 0 &&
@@ -210,7 +211,7 @@ static void maingraph(DFSlinks* dfslinks, DFSlinks* mainlinks, CtgDepth* ctg_dep
             break;
         }
         *main_num = flag_num;
-        for (int i = 0; i < *main_num; i++) {
+        for (i = 0; i < *main_num; i++) {
             copy_DFSlinks(&templinks[i], &mainlinks[i]);
         }
         
@@ -414,6 +415,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     run_blastn(cutseq, kmer1000, blast_out, 8, &num_hits);
     remove_file(kmer1000);
     /* the type of contig structure */
+    uint64_t i, j, n;
     if (num_hits > 0) {
         FILE* fpblast = fopen(blast_out, "r");
         if (fpblast == NULL) {
@@ -437,7 +439,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
             if (kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) != 0){
                 if (tempiden > 0.99 && temps <= 450 && tempe >= 550) {
                     int add_flag = 1;
-                    for (int i = 0; i < *num_dfslinks; i++) {
+                    for (i = 0; i < *num_dfslinks; i++) {
                         if ((*dfslinks)[i].lctgsmp == tempctg && (*dfslinks)[i].rctgsmp == tempctg) {
                             add_flag = 0;
                             kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) = 0;
@@ -505,11 +507,11 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     }
     log_message(INFO, "Raw seeds (%s): %d", organelles_type, num_dynseeds);
     if (num_dynseeds > 0) {
-        for (int i = 0; i < num_dynseeds; i++) {
+        for (i = 0; i < num_dynseeds; i++) {
             int seed = (*dynseeds)[i];
             int ctg_RC = ctgdepth[seed - 1].len * ctgdepth[seed - 1].depth;
 
-            for (int j = 0; j < num_dynseeds; j++) {
+            for (j = 0; j < num_dynseeds; j++) {
                 if (seed == fnainfos[j].ctg) {
                     fprintf(fprawgfa, "S\t%d\t%s\tLN:i:%d\tRC:i:%d\n", seed, fnainfos[j].seq, ctgdepth[seed - 1].len, ctg_RC);
                     fprintf(fprawfa, ">%d Len:%d Dep:%.2f\n%s\n", seed, ctgdepth[seed - 1].len, ctgdepth[seed - 1].depth, fnainfos[j].seq);
@@ -517,7 +519,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
             }
         }
 
-        for (int i = 0; i < *num_dfslinks; i++) {
+        for (i = 0; i < *num_dfslinks; i++) {
             fprintf(fprawgfa, "L\t%d\t", (*dfslinks)[i].lctgsmp);
             if ((*dfslinks)[i].lutrsmp == (*dfslinks)[i].rutrsmp) {
                 if ((*dfslinks)[i].lutrsmp == 3) {
@@ -609,6 +611,8 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
 
     int ps_num = 0;
     pathScore *ps_struct = (pathScore*) malloc(5 * sizeof(pathScore));
+    khint_t k, ka, kb;
+    int rm_flag = 0;
     if (1) {
         /* Capturing all mitochondrial structures */
         khash_t(Ha_structures)* h_structures = kh_init(Ha_structures);
@@ -621,12 +625,12 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
         float temp_filter_depth = 0.0;
         float maxscore = 0.0;
         
-        for (int i = 0; i < structure_num; i++) 
+        for (i = 0; i < structure_num; i++) 
         {
-            khint_t k = kh_get(Ha_structures, h_structures, i);
+            k = kh_get(Ha_structures, h_structures, i);
             if (k != kh_end(h_structures)) {
                 DFSstructure* temp_struct = kh_value(h_structures, k);
-                for (int j = 0; j < temp_struct->num_nodes; j++) {
+                for (j = 0; j < temp_struct->num_nodes; j++) {
                     if (maxscore < ctgdepth[(temp_struct->node[j]) - 1].len &&
                         findint(interfering_ctg, interfering_ctg_num, temp_struct->node[j]) == 0) {
                         temp_filter_depth = ctgdepth[(temp_struct->node[j]) - 1].depth;
@@ -639,12 +643,12 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
             temp_filter_depth = (10/3) * filter_depth;
         }
 
-        for (int i = 0; i < structure_num; i++)
+        for (i = 0; i < structure_num; i++)
         {
             max_structure_num = 1;
             linear_f = 0;
             struc++;
-            khint_t k = kh_get(Ha_structures, h_structures, i);
+            k = kh_get(Ha_structures, h_structures, i);
             if (k != kh_end(h_structures)) {
                 DFSstructure* temp_struct = kh_value(h_structures, k);
 
@@ -655,14 +659,14 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                 int temp_mainseeds_num = 0;
 
                 DFSlinks* temp_structlinks = (DFSlinks*) malloc((temp_struct->num_links) * sizeof(DFSlinks));
-                for (int j = 0; j < temp_struct->num_links; j++) {
+                for (j = 0; j < temp_struct->num_links; j++) {
                     copy_DFSlinks(&temp_structlinks[j], &temp_struct->links[j]);
                 }
                 maingraph(temp_structlinks, temp_mainlinks, ctgdepth, temp_struct->num_nodes, temp_struct->num_links, temp_mainseeds, 
                             &temp_main_num, &temp_mainseeds_num, NULL, 0, 0.3*temp_filter_depth);
                 if (temp_mainseeds_num == 0) {
                     linear_f = 1;
-                    for (int j = 0; j < temp_struct->num_nodes; j++) {
+                    for (j = 0; j < temp_struct->num_nodes; j++) {
                         if (ctgdepth[(temp_struct->node[j]) - 1].depth > 0.3*temp_filter_depth) {
                             temp_mainseeds_num++;
                         }
@@ -670,11 +674,11 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
 
                     if (temp_mainseeds_num > 0) {
                         temp_mainseeds_num = 0;
-                        for (int j = 0; j < temp_struct->num_nodes; j++) {
+                        for (j = 0; j < temp_struct->num_nodes; j++) {
                             temp_mainseeds[j] = temp_struct->node[j];
                             temp_mainseeds_num++;
                         }
-                        for (int j = 0; j < temp_struct->num_links; j++) {
+                        for (j = 0; j < temp_struct->num_links; j++) {
                             copy_DFSlinks(&temp_mainlinks[j], &temp_struct->links[j]);
                             temp_main_num++;
                         }
@@ -682,7 +686,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
 
                 } else if (strcmp(organelles_type, "pt") == 0 || taxo == 1 || taxo == 2) {
                     float flag_depth = ctgdepth[(*dynseeds)[0] - 1].depth;
-                    for (int j = 0; j < temp_struct->num_nodes; j++) {
+                    for (j = 0; j < temp_struct->num_nodes; j++) {
                         float temp_depth = ctgdepth[(temp_struct->node[j]) - 1].depth;
                         int temp_len = ctgdepth[(temp_struct->node[j]) - 1].len;
                         if (temp_depth > 0.4 * flag_depth &&
@@ -694,11 +698,11 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                             linear_f = 1;
                             temp_mainseeds_num = temp_struct->num_nodes;
                             temp_main_num = temp_struct->num_links;
-                            for (int j = 0; j < temp_struct->num_links; j++) {
-                                copy_DFSlinks(&temp_mainlinks[j], &temp_struct->links[j]);
+                            for (n = 0; n < temp_struct->num_links; n++) {
+                                copy_DFSlinks(&temp_mainlinks[n], &temp_struct->links[n]);
                             }
-                            for (int j = 0; j < temp_struct->num_nodes; j++) {
-                                temp_mainseeds[j] = temp_struct->node[j];
+                            for (n = 0; n < temp_struct->num_nodes; n++) {
+                                temp_mainseeds[n] = temp_struct->node[n];
                             }
                             break;
                         }
@@ -716,7 +720,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                     //     }
                     // }
                 }
-                for (int j = 0; j < temp_mainseeds_num; j++) 
+                for (j = 0; j < temp_mainseeds_num; j++) 
                 {
                     if (findint(*mainseeds, *mainseeds_num, temp_mainseeds[j]) == 0) {
                         (*mainseeds)[(*mainseeds_num)] = temp_mainseeds[j];
@@ -728,15 +732,15 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                 /* h_links 1:{2,3,4;3}；2:{1,5,6;3}；3:{1,4;2}... */
                 khash_t(Ha_nodelink)* h_links = kh_init(Ha_nodelink);
 
-                for (int j = 0; j < temp_mainseeds_num; j++) 
+                for (j = 0; j < temp_mainseeds_num; j++) 
                 {
                     nodeNum tempNodeNum;
                     tempNodeNum.num = 0;
                     tempNodeNum.node = (int*) malloc((temp_mainseeds_num + 1) * sizeof(int));
                     int ret;
-                    khint_t temp_k;
-                    temp_k = kh_put(Ha_nodelink, h_links, temp_mainseeds[j], &ret);
-                    for (int n = 0; n < temp_main_num; n++) 
+
+                    ka = kh_put(Ha_nodelink, h_links, temp_mainseeds[j], &ret);
+                    for (n = 0; n < temp_main_num; n++) 
                     {
                         if (temp_mainlinks[n].lctgsmp == temp_mainseeds[j]) {
                             tempNodeNum.node[tempNodeNum.num] = temp_mainlinks[n].rctgsmp;
@@ -749,52 +753,53 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                         
                     }
 
-                    kh_value(h_links, temp_k) = tempNodeNum;
+                    kh_value(h_links, ka) = tempNodeNum;
                     if (tempNodeNum.num > 1) max_structure_num = max_structure_num * (tempNodeNum.num - 1);
                 }
 
                 int transfer_num = 0;
                 int non_transfer_num = 0;
+                
                 if (interfering_ctg_num > 0) {
                     int* transfer_ctg = (int*) malloc(interfering_ctg_num * sizeof(int));
-                    for (khint_t k = kh_begin(h_links); k != kh_end(h_links); ++k) 
+                    for (ka = kh_begin(h_links); ka != kh_end(h_links); ++ka) 
                     {
-                        if (kh_exist(h_links, k)) {
-                            int key = kh_key(h_links, k);
+                        if (kh_exist(h_links, ka)) {
+                            int key = kh_key(h_links, ka);
                             
                             int flag_transfer = 0;
 
                             nodeNum tempNodeNum = kh_value(h_links, kh_get(Ha_nodelink, h_links, key));
 
                             if (findint(interfering_ctg, interfering_ctg_num, key) == 0) {
-                                for (int j = 0; j < tempNodeNum.num; j++) 
+                                for (j = 0; j < tempNodeNum.num; j++) 
                                 {
                                     if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[j]) == 0)
                                         flag_transfer++;
                                 }
                             }
 
-                            for (int i = 0; i < tempNodeNum.num; i++) 
+                            for (j = 0; j < tempNodeNum.num; j++) 
                             {
-                                if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[i]) == 1 &&
+                                if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[j]) == 1 &&
                                     findint(interfering_ctg, interfering_ctg_num, key) == 1) {
                                         non_transfer_num++;
-                                } else if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[i]) == 1 &&
+                                } else if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[j]) == 1 &&
                                     findint(interfering_ctg, interfering_ctg_num, key) == 0 &&
-                                    findint(transfer_ctg, transfer_num, tempNodeNum.node[i]) == 0 &&
-                                    ctgdepth[tempNodeNum.node[i] - 1].len > 30) {
+                                    findint(transfer_ctg, transfer_num, tempNodeNum.node[j]) == 0 &&
+                                    ctgdepth[tempNodeNum.node[j] - 1].len > 30) {
                                         if (flag_transfer > 0) {
-                                            transfer_ctg[transfer_num] = tempNodeNum.node[i];
+                                            transfer_ctg[transfer_num] = tempNodeNum.node[j];
                                             transfer_num++;
                                         }
-                                } else if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[i]) == 0 &&
+                                } else if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum.node[j]) == 0 &&
                                     findint(interfering_ctg, interfering_ctg_num, key) == 1 &&
                                     findint(transfer_ctg, transfer_num, key) == 0) {
                                         int temp_flag = 0;
-                                        nodeNum tempNodeNum2 = kh_value(h_links, kh_get(Ha_nodelink, h_links, tempNodeNum.node[i]));
-                                        for (int j = 0; j < tempNodeNum2.num; j++) 
+                                        nodeNum tempNodeNum2 = kh_value(h_links, kh_get(Ha_nodelink, h_links, tempNodeNum.node[j]));
+                                        for (n = 0; n < tempNodeNum2.num; n++) 
                                         {
-                                            if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum2.node[j]) == 0)
+                                            if (findint(interfering_ctg, interfering_ctg_num, tempNodeNum2.node[n]) == 0)
                                                 temp_flag ++;
                                         }
                                         if (temp_flag > 0) {
@@ -807,16 +812,17 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                     }
                 }
 
-                for (khint_t tk = kh_begin(h_links); tk != kh_end(h_links); ++tk) 
+                for (ka = kh_begin(h_links); ka != kh_end(h_links); ++ka) 
                 {
-                    if (kh_exist(h_links, tk)) {
-                        nodeNum tempNodeNum = kh_value(h_links, tk);
+                    if (kh_exist(h_links, ka)) {
+                        nodeNum tempNodeNum = kh_value(h_links, ka);
                         free(tempNodeNum.node);
                     }
                 }
                 kh_destroy(Ha_nodelink, h_links);
                 if (transfer_num == 0 && non_transfer_num > 0) {
                     struc--;
+                    rm_flag = 1;
                     continue;
                 } else if (temp_main_num > 0) {
                     log_info("Structure %d: \n", struc);
@@ -830,7 +836,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                     int utr_e = 3;
                     int temp_linear = 0;
 
-                    for (int j = 0; j < temp_mainseeds_num; j++) 
+                    for (j = 0; j < temp_mainseeds_num; j++) 
                     {
                         if (ctg_len < ctgdepth[(temp_mainseeds[j]) - 1].len &&
                             findint(interfering_ctg, interfering_ctg_num, temp_mainseeds[j]) == 0) {
@@ -842,19 +848,19 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                         int temp_len = 0;
                         int temp_ctg = 0;
                         int temp_utr = 0;
-                        for (int j = 0; j < temp_mainseeds_num; j++) 
+                        for (j = 0; j < temp_mainseeds_num; j++) 
                         {
                             int num = 0;
                             int dy_utr = 0;
-                            for (int k = 0; k < temp_main_num; k++) 
+                            for (n = 0; n < temp_main_num; n++) 
                             {
-                                int temp_lutr = temp_mainlinks[k].lutrsmp;
-                                int temp_rutr = temp_mainlinks[k].rutrsmp;
+                                int temp_lutr = temp_mainlinks[n].lutrsmp;
+                                int temp_rutr = temp_mainlinks[n].rutrsmp;
 
-                                if (temp_mainlinks[k].lctgsmp == temp_mainseeds[j] && temp_lutr != dy_utr) {
+                                if (temp_mainlinks[n].lctgsmp == temp_mainseeds[j] && temp_lutr != dy_utr) {
                                     num++;
                                     dy_utr = temp_lutr;
-                                } else if (temp_mainlinks[k].rctgsmp == temp_mainseeds[j] && temp_rutr != dy_utr)
+                                } else if (temp_mainlinks[n].rctgsmp == temp_mainseeds[j] && temp_rutr != dy_utr)
                                 {
                                     num++;
                                     dy_utr = temp_rutr;
@@ -887,7 +893,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                         log_message(WARNING, "Failed to find M-path");
                     } else {
                         float struc_depth = 0.0;
-                        for (int j = 0; j < struct_path.node_num; j++) {
+                        for (j = 0; j < struct_path.node_num; j++) {
                             struc_depth += ctgdepth[struct_path.path_node[j] - 1].depth;
                         }
                         struc_depth /= struct_path.node_num;
@@ -898,13 +904,13 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                         // printf("Graph path %s %.2f%% %ld bp:\n", path_score.type == 0 ? "C" : "L", ratio * 100, path_score.path_len);
                         log_info("\n");
                         log_info("** ");
-                        for (int i = 0; i < (struct_path.node_num - 1); i++) {
-                            log_info("%d (%c) -> ", struct_path.path_node[i], (struct_path.path_utr[i] == 3 ? '-' : '+'));
+                        for (j = 0; j < (struct_path.node_num - 1); j++) {
+                            log_info("%d (%c) -> ", struct_path.path_node[j], (struct_path.path_utr[j] == 3 ? '-' : '+'));
                         }
                         if (struct_path.type == 0) {
                             log_info("%d\n", struct_path.path_node[struct_path.node_num - 1]);
                         } else {
-                            log_info("%d (%c)\n", struct_path.path_node[struct_path.node_num - 1], (struct_path.path_utr[i] == 3 ? '-' : '+'));
+                            log_info("%d (%c)\n", struct_path.path_node[struct_path.node_num - 1], (struct_path.path_utr[struct_path.node_num - 1] == 3 ? '-' : '+'));
                         }
                         log_info("———————————————————————————————————————\n");
 
@@ -958,7 +964,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
                 exit(EXIT_FAILURE);
             }
         }
-        for (int i = 0; i < *num_dfslinks; i++)
+        for (i = 0; i < *num_dfslinks; i++)
         {
             if (findint(*mainseeds, *mainseeds_num, (*dfslinks)[i].lctgsmp) == 1 &&
                 findint(*mainseeds, *mainseeds_num, (*dfslinks)[i].rctgsmp) == 1) {
@@ -971,7 +977,13 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     khash_t(Ha_nodeseq)* h_nodeseq = kh_init(Ha_nodeseq);
 
     if (*mainseeds_num > 0) {
-        log_message(INFO, "Main seeds (%s): %d", organelles_type, *mainseeds_num);
+        int numseeds = 0;
+        for (i = 0; i < *mainseeds_num; i++) {
+            if (findint(interfering_ctg, interfering_ctg_num, (*mainseeds)[i]) == 0) {
+                numseeds++;
+            }
+        }
+        log_message(INFO, "Main seeds (%s): %d", organelles_type, numseeds);
 
         /* main graph */
         FILE* fpmaingfa = fopen(maingfa, "w");
@@ -982,11 +994,12 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
         
         int ret;
         khiter_t iter;
-        for (int i = 0; i < *mainseeds_num; i++) {
+        for (i = 0; i < *mainseeds_num; i++) {
             int seed = (*mainseeds)[i];
+            if (rm_flag == 1 && findint(interfering_ctg, interfering_ctg_num, seed) == 1) continue;
             int ctg_RC = ctgdepth[seed - 1].len * ctgdepth[seed - 1].depth;
 
-            for (int j = 0; j < num_dynseeds; j++) {
+            for (j = 0; j < num_dynseeds; j++) {
                 if (seed == fnainfos[j].ctg) {
                     fprintf(fpmaingfa, "S\t%d\t%s\tLN:i:%d\tRC:i:%d\n", seed, fnainfos[j].seq, ctgdepth[seed - 1].len, ctg_RC);
                     iter = kh_get(Ha_nodeseq, h_nodeseq, seed);
@@ -1002,7 +1015,8 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
             }
         }
 
-        for (int i = 0; i < main_num; i++) {
+        for (i = 0; i < main_num; i++) {
+            if (rm_flag == 1 && findint(interfering_ctg, interfering_ctg_num, mainlinks[i].lctgsmp) == 1 && findint(interfering_ctg, interfering_ctg_num, mainlinks[i].rctgsmp) == 1) continue;
             fprintf(fpmaingfa, "L\t%d\t", mainlinks[i].lctgsmp);
             if (mainlinks[i].lutrsmp == mainlinks[i].rutrsmp) {
                 if (mainlinks[i].lutrsmp == 3) {
@@ -1036,13 +1050,13 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     //     free(mainlinks[i].lctg);
     //     free(mainlinks[i].rctg);
     // }
-    for (int i = 0; i < ps_num; i++) {
+    for (i = 0; i < ps_num; i++) {
         free(ps_struct[i].path_node);
         free(ps_struct[i].path_utr);
     }
     free(ps_struct);
 
-    for (khint_t k = kh_begin(h_nodeseq); k != kh_end(h_nodeseq); ++k) {
+    for (k = kh_begin(h_nodeseq); k != kh_end(h_nodeseq); ++k) {
         if (kh_exist(h_nodeseq, k)) {
             free(kh_value(h_nodeseq, k));
         }
@@ -1052,7 +1066,7 @@ void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfsl
     free(mainlinks);
     // free(mainseeds);
     free(gfa_output);
-    for (int i = 0; i < num_dynseeds; i++) {
+    for (i = 0; i < num_dynseeds; i++) {
         free(fnainfos[i].seq);
     }
     free(fnainfos);

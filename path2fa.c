@@ -36,6 +36,7 @@ SOFTWARE.
 
 /*  Function to reverse complement a sequence */
 char *convert_seq(const char *seq, int flag) {
+    uint64_t i;
     if (flag == 3) {
         return strdup(seq);
     } else if (flag == 5) {
@@ -46,7 +47,7 @@ char *convert_seq(const char *seq, int flag) {
             exit(EXIT_FAILURE);
         }
 
-        for (size_t i = 0; i < len; i++) {
+        for (i = 0; i < len; i++) {
             char base = seq[len - 1 - i]; // Reverse the sequence
             switch (base) {
                 case 'A': rev_comp[i] = 'T'; break;
@@ -73,8 +74,8 @@ void path2fa(pathScore *path, int ps_num, khash_t(Ha_nodeseq)* node_seq, const c
         fprintf(stderr, "Failed to open output file\n");
         exit(EXIT_FAILURE);
     }
-
-    for (int i = 0; i < ps_num; i++) {
+    uint64_t i, j;
+    for (i = 0; i < ps_num; i++) {
         pathScore *ps = &path[i];
         char *final_seq = (char *)malloc(1024);
         if (!final_seq) {
@@ -88,7 +89,7 @@ void path2fa(pathScore *path, int ps_num, khash_t(Ha_nodeseq)* node_seq, const c
         if (ps->type == 0) {
             ps_node_num--; // Remove the start node
         }
-        for (uint32_t j = 0; j < ps_node_num; j++) {
+        for (j = 0; j < ps_node_num; j++) {
             int node_id = ps->path_node[j];
             int orientation = ps->path_utr[j];
 
@@ -138,7 +139,7 @@ void path2fa(pathScore *path, int ps_num, khash_t(Ha_nodeseq)* node_seq, const c
         snprintf(seq_id, buffer_size, "%s_", prefix);
         offset = strlen(seq_id);
 
-        for (uint32_t j = 0; j < ps->node_num; j++) {
+        for (j = 0; j < ps->node_num; j++) {
             int node_id = ps->path_node[j];
             char utr_flag = (ps->path_utr[j] == 5) ? '+' : '-'; // 5 -> +, 3 -> -
             size_t needed_space = snprintf(NULL, 0, "%d%c", node_id, utr_flag);

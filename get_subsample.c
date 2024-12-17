@@ -81,7 +81,7 @@ void subsample(const char* output, const char* corrected_seq, double factor, int
 
     log_message(INFO, "Random select sequence start ...");
 
-
+    uint64_t i;
     // Check if file exists
     FILE* check_file = fopen(output, "r");
     if (check_file != NULL) {
@@ -141,12 +141,14 @@ void subsample(const char* output, const char* corrected_seq, double factor, int
 
         int* random_index = (int*)malloc(seq_num * sizeof(int));
         
-        for (int i = 0; i < seq_num; i++) {
+        
+        for (i = 0; i < seq_num; i++) {
             random_index[i] = i;
         }
 
         // Fisher-Yates shuffle algorithm
-        for (int i = 0; i < subset_size; i++) {
+
+        for (i = 0; i < subset_size; i++) {
             int j = i + rand() % (seq_num - i);
             int temp = random_index[i];
             random_index[i] = random_index[j];

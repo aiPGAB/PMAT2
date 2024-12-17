@@ -73,6 +73,7 @@ void MtHitseeds(const char* exe_path, const char* organelles_type, const char* a
     log_message(INFO, "Finding Mt seeds...");
     char *dir = dirname(strdup(exe_path));  // strdup to avoid modifying exe_path
     size_t dir_len = strlen(dir);
+    uint64_t i, j;
     size_t db_path_len = dir_len + strlen("/Conserved_PCGs_db/Plant_conserved_mtgene_nt.fa") + 1;
     char db_path[db_path_len];
     
@@ -129,13 +130,13 @@ void MtHitseeds(const char* exe_path, const char* organelles_type, const char* a
     fclose(fasta);
 
     PCGs *conv_pcgs = malloc(sizeof(PCGs) * gene_count);
-    for (size_t i = 0; i < gene_count; i++) {
+    for (i = 0; i < gene_count; i++) {
         const char *gene = conserved_genes[i];
         conv_pcgs[i].length = 0;
         strncpy(conv_pcgs[i].gene, gene, sizeof(conv_pcgs[i].gene));
         int num = 0;
 
-        for (int j = 0; j < idx; j++) {
+        for (j = 0; j < idx; j++) {
             if (strcmp(pcgs[j].gene, gene) == 0) {
                 num += 1;
                 conv_pcgs[i].length += pcgs[j].length;
@@ -207,10 +208,10 @@ void MtHitseeds(const char* exe_path, const char* organelles_type, const char* a
         char* loc = strrchr(organgene, '_');
         tempgene = strdup(loc + 1);
 
-        int tem_flag = 0;
+        // int tem_flag = 0;
         int tempctg_int = rm_contig(tempctg);
         if (ctg_depth[tempctg_int - 1].depth > filter_depth) {
-            for (size_t i = 0; i < gene_count; i++) {
+            for (i = 0; i < gene_count; i++) {
                 if (strcmp(tempgene, conv_pcgs[i].gene) == 0) {
                     if (findstr(exon_genes, exon_gene_count, tempgene) == 1 && tempiden > 90 && templen > 500) {
 
@@ -286,10 +287,10 @@ void MtHitseeds(const char* exe_path, const char* organelles_type, const char* a
     /* Sort the scores in descending order */
     SortPcgCtgs *sort_pcg_ctgs = malloc(sizeof(SortPcgCtgs) * 30);
     size_t sort_idx = 0;
-    for (size_t i = 0; i < gene_count; i++) {
+    for (i = 0; i < gene_count; i++) {
         if (sort_idx >= 30) break;
         if (pcg_ctgs[i].ctg != NULL) {
-            for (int j = 0; j < pcg_ctgs[i].num_ctg; j++) {
+            for (j = 0; j < pcg_ctgs[i].num_ctg; j++) {
                 sort_pcg_ctgs[sort_idx].ctg = pcg_ctgs[i].ctg[j];
                 sort_pcg_ctgs[sort_idx].score = pcg_ctgs[i].score[j];
                 sort_pcg_ctgs[sort_idx].ctglen = pcg_ctgs[i].ctglen[j];
@@ -312,7 +313,7 @@ void MtHitseeds(const char* exe_path, const char* organelles_type, const char* a
         log_info(" _______________________________________________________\n");
         log_info(" Contig Name    Length (bp)   Depth (x)     Score    \n");
         log_info(" -------------  ------------  ------------  ------------\n");
-        for (size_t i = 0; i < sort_idx; i++) {
+        for (i = 0; i < sort_idx; i++) {
             log_info(" %-12s   %-12d  %-12g  %-10.2f\n", 
                     sort_pcg_ctgs[i].ctg, 
                     sort_pcg_ctgs[i].ctglen, 
@@ -337,6 +338,7 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
     char *dir = dirname(strdup(exe_path));  // strdup to avoid modifying exe_path
     size_t dir_len = strlen(dir);
     size_t db_path_len = dir_len + strlen("/Conserved_PCGs_db/Plant_conserved_cpgene_nt.fa") + 1;
+    uint64_t i;
     char db_path[db_path_len];
     
     if (strcmp(organelles_type, "pt") == 0) {
@@ -399,7 +401,7 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
             templen = atoi(token);
         }
 
-        int tem_flag = 0;
+        // int tem_flag = 0;
         int tempctg_int = rm_contig(tempctg);
         if (ctg_depth[tempctg_int - 1].depth > filter_depth) {
             if (tempiden > 70 && templen > 500) {
@@ -424,7 +426,7 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
         log_info(" _______________________________________________________\n");
         log_info(" Contig Name    Length (bp)   Depth (x)     Score    \n");
         log_info(" -------------  ------------  ------------  ------------\n");
-        for (size_t i = 0; i < seeds_ctg; i++) {
+        for (i = 0; i < seeds_ctg; i++) {
             log_info(" %-12s   %-12d  %-12g  %-10.2f\n", 
                     ptpcg_ctgs[i].ctg, 
                     ptpcg_ctgs[i].ctglen, 
@@ -453,7 +455,7 @@ void AnHitseeds(const char* exe_path, const char* organelles_type, const char* a
     size_t dir_len = strlen(dir);
     size_t db_path_len = dir_len + strlen("/Conserved_PCGs_db/Animal_conserved_cpgene_nt.fa") + 1;
     char db_path[db_path_len];
-    
+    uint64_t i;
     if (strcmp(organelles_type, "mt") == 0) {
         snprintf(db_path, db_path_len, "%s/Conserved_PCGs_db/Animal_conserved_mtgene_nt.fa", dir);
     } else  {
@@ -512,7 +514,7 @@ void AnHitseeds(const char* exe_path, const char* organelles_type, const char* a
             templen = atoi(token);
         }
 
-        int tem_flag = 0;
+        // int tem_flag = 0;
         int tempctg_int = rm_contig(tempctg);
         if (ctg_depth[tempctg_int - 1].depth > filter_depth) {
             if (tempiden > 70 && templen > 500) {
@@ -539,7 +541,7 @@ void AnHitseeds(const char* exe_path, const char* organelles_type, const char* a
         log_info(" Contig Name    Length (bp)   Depth (x)     Score    \n");
         log_info(" -------------  ------------  ------------  ------------\n");
         (*ctg_threshold) = 0;
-        for (size_t i = 0; i < seeds_ctg; i++) {
+        for (i = 0; i < seeds_ctg; i++) {
             log_info(" %-12s   %-12d  %-12g  %-10.2f\n", 
                     mtpcg_ctgs[i].ctg, 
                     mtpcg_ctgs[i].ctglen, 
@@ -656,7 +658,7 @@ void AnHitseeds(const char* exe_path, const char* organelles_type, const char* a
 //         log_info(" Contig Name    Length (bp)   Depth (x)     Score    \n");
 //         log_info(" -------------  ------------  ------------  ------------\n");
 //         (*ctg_threshold) = 0;
-//         for (size_t i = 0; i < seeds_ctg; i++) {
+//         for (i = 0; i < seeds_ctg; i++) {
 //             log_info(" %-12s   %-12d  %-12g  %-10.2f\n", 
 //                     mtpcg_ctgs[i].ctg, 
 //                     mtpcg_ctgs[i].ctglen, 
@@ -686,6 +688,7 @@ void FuHitseeds(const char* exe_path, const char* organelles_type, const char* a
     char *dir = dirname(strdup(exe_path));  // strdup to avoid modifying exe_path
     size_t dir_len = strlen(dir);
     size_t db_path_len = dir_len + strlen("/Conserved_PCGs_db/Fungi_conserved_mtgene_nt.fa") + 1;
+    uint64_t i, j;
     char db_path[db_path_len];
     
     if (strcmp(organelles_type, "mt") == 0) {
@@ -695,7 +698,7 @@ void FuHitseeds(const char* exe_path, const char* organelles_type, const char* a
     }
 
     PCGs *conv_pcgs = malloc(sizeof(PCGs) * fu_gene_count);
-    for (size_t i = 0; i < fu_gene_count; i++) {
+    for (i = 0; i < fu_gene_count; i++) {
         strncpy(conv_pcgs[i].gene, fu_conserved_genes[i], sizeof(conv_pcgs[i].gene));
         conv_pcgs[i].length = fu_gene_len[i];
     }
@@ -758,10 +761,10 @@ void FuHitseeds(const char* exe_path, const char* organelles_type, const char* a
         char* loc = strrchr(organgene, '_');
         tempgene = strdup(loc + 1);
 
-        int tem_flag = 0;
+        // int tem_flag = 0;
         int tempctg_int = rm_contig(tempctg);
         if (ctg_depth[tempctg_int - 1].depth > filter_depth) {
-            for (size_t i = 0; i < fu_gene_count; i++) {
+            for (i = 0; i < fu_gene_count; i++) {
                 if (strcmp(tempgene, conv_pcgs[i].gene) == 0) {
                     if (findstr(fu_exon_genes, fu_exon_gene_count, tempgene) == 1 && tempiden > 70 && templen > 300) {
 
@@ -837,10 +840,10 @@ void FuHitseeds(const char* exe_path, const char* organelles_type, const char* a
     /* Sort the scores in descending order */
     SortPcgCtgs *sort_pcg_ctgs = malloc(sizeof(SortPcgCtgs) * 30);
     size_t sort_idx = 0;
-    for (size_t i = 0; i < fu_gene_count; i++) {
+    for (i = 0; i < fu_gene_count; i++) {
         if (sort_idx >= 30) break;
         if (pcg_ctgs[i].ctg != NULL) {
-            for (int j = 0; j < pcg_ctgs[i].num_ctg; j++) {
+            for (j = 0; j < pcg_ctgs[i].num_ctg; j++) {
                 sort_pcg_ctgs[sort_idx].ctg = pcg_ctgs[i].ctg[j];
                 sort_pcg_ctgs[sort_idx].score = pcg_ctgs[i].score[j];
                 sort_pcg_ctgs[sort_idx].ctglen = pcg_ctgs[i].ctglen[j];
@@ -863,7 +866,7 @@ void FuHitseeds(const char* exe_path, const char* organelles_type, const char* a
         log_info(" _______________________________________________________\n");
         log_info(" Contig Name    Length (bp)   Depth (x)     Score    \n");
         log_info(" -------------  ------------  ------------  ------------\n");
-        for (size_t i = 0; i < sort_idx; i++) {
+        for (i = 0; i < sort_idx; i++) {
             log_info(" %-12s   %-12d  %-12g  %-10.2f\n", 
                     sort_pcg_ctgs[i].ctg, 
                     sort_pcg_ctgs[i].ctglen, 
@@ -895,7 +898,7 @@ static void run_blastn(const char *all_contigs, const char *db_path, char *blast
     char* command = malloc(comond_len);
     snprintf(command, comond_len, "blastn -db %s -query %s -outfmt 6 -num_threads %d -num_alignments 1 -max_hsps 1 > %s", db_path, all_contigs, num_threads, blastn_out);
 
-    execute_command(command, 0, 1);
+    execute_command(command, 0, 0);
 
     if (access(blastn_out, F_OK) != 0) {
         log_message(ERROR, "Failed to run blastn");
@@ -940,7 +943,7 @@ int main(int argc, char **argv) {
 
 
     FILE *graph_file = fopen(all_graph, "r");
-
+    uint64_t i;
     size_t line_len;
     char *line = NULL;
     int num_ctgs = 0;
@@ -979,7 +982,7 @@ int main(int argc, char **argv) {
         }
     }
     
-    // for (int i = 0; i < idx; i++) {
+    // for (i = 0; i < idx; i++) {
     //     log_info("Contig: %s, Length: %d, Depth: %g, Score: %g\n", ctg_depth[i].ctg, ctg_depth[i].len, ctg_depth[i].depth, ctg_depth[i].score);
     // }
 
@@ -989,19 +992,19 @@ int main(int argc, char **argv) {
     char *exe_path = realpath(argv[0], NULL);
     char **candidate_seeds = calloc(6, sizeof(char*));
     hitseeds(exe_path, argv[1], argv[2], argv[5], atoi(argv[4]), num_ctgs, ctg_depth, &candidate_seeds, 6);
-    for (int i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
         if (candidate_seeds[i] != NULL) {
             printf("%s\n", candidate_seeds[i]);
         }
     }
 
     /* Free memory */
-    for (int i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++) {
         if (candidate_seeds[i] != NULL) {
             free(candidate_seeds[i]);
         }
     }
-    for (int i = 0; i < num_ctgs; i++) {
+    for (i = 0; i < num_ctgs; i++) {
         free(ctg_depth[i].ctg);
     }
     

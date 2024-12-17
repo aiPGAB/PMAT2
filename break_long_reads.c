@@ -40,6 +40,7 @@ SOFTWARE.
 void BreakLongReads(const char *input_seq, const char *output_seq, int break_length) {
     log_message(INFO, "Reads breaking started...");
 
+    uint64_t i;
     if (access(input_seq, F_OK) != 0) {
         log_message(ERROR, "File not found: %s", input_seq);
         exit(EXIT_FAILURE);
@@ -78,7 +79,7 @@ void BreakLongReads(const char *input_seq, const char *output_seq, int break_len
                     int longer_length = shorter_length + 1;
                     
                     int pos = 0;
-                    for (int i = 0; i < min_segments; i++) {
+                    for (i = 0; i < min_segments; i++) {
                         int current_length = (i < longer_segments) ? longer_length : shorter_length;
                         
                         seq_count++;

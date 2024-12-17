@@ -67,7 +67,8 @@ yak_bf_t *yak_bf_init(int n_shift, int n_hashes)
 	b->n_hashes = n_hashes;
 	posix_memalign(&ptr, 1<<(YAK_BLK_SHIFT-3), 1ULL<<(n_shift-3));
 	b->b = ptr;
-	bzero(b->b, 1ULL<<(n_shift-3));
+	// bzero(b->b, 1ULL<<(n_shift-3));
+	memset(b->b, 0, 1ULL << (n_shift - 3));
 	return b;
 }
 

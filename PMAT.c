@@ -268,16 +268,31 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
 
         if (strcmp(opts->correct_software, "canu") == 0) {
             if (opts->canu_path == NULL) {
-                log_message(ERROR, "Can't find Canu, please specify the path with -C");
+                if (which_executable("canu") == 0) {
+                    log_message(ERROR, "Can't find Canu, please specify the path with -C");
+                    exit(EXIT_FAILURE);
+                } else {
+                    opts->canu_path = strdup("canu");
+                }
+            }
+            if (which_executable(opts->canu_path) == 0) {
+                log_message(ERROR, "Can't find Canu, please specify the correct path with -C");
                 exit(EXIT_FAILURE);
             }
-            check_executable(opts->canu_path);
         } else if (strcmp(opts->correct_software, "nextdenovo") == 0) {
             if (opts->nextdenovo_path == NULL) {
-                log_message(ERROR, "Can't find NextDenovo, please specify the path with -N");
+                if (which_executable("nextDenovo") == 0) {
+                    log_message(ERROR, "Can't find NextDenovo, please specify the path with -N");
+                    exit(EXIT_FAILURE);
+                } else {
+                    opts->nextdenovo_path = strdup("nextDenovo");
+                }
+            }
+            if (which_executable(opts->nextdenovo_path) == 0) {
+                log_message(ERROR, "Can't find NextDenovo, please specify the correct path with -N");
                 exit(EXIT_FAILURE);
             }
-            check_executable(opts->nextdenovo_path);
+
         } else {
             log_message(ERROR, "Invalid error correction software (canu/nextdenovo) : %s", opts->correct_software);
             exit(EXIT_FAILURE);
@@ -297,7 +312,10 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         }
     }
 
-    check_executable("blastn");
+    if (which_executable("blastn") == 0) {
+        log_message(ERROR, "Can't find blastn, please install it");
+        exit(EXIT_FAILURE);
+    }
 
     if (which_executable("apptainer") == 0 && which_executable("singularity") == 0) {
         log_message(ERROR, "Can't find apptainer or singularity, please install one of them");
@@ -436,7 +454,11 @@ void graphBuild_arguments(int argc, char *argv[], graphBuildArgs *args) {
         }
     }
 
-    check_executable("blastn");
+    if (which_executable("blastn") == 0) {
+        log_message(ERROR, "Can't find blastn, please install it");
+        exit(EXIT_FAILURE);
+    }
+
 }
 
 int main(int argc, char *argv[]) {

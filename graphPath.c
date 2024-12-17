@@ -132,7 +132,8 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
     visited_nodes[*visited_num] = node;
     (*visited_num)++;
 
-    for (int i = 0; i < link_num; i++) {
+    uint64_t i;
+    for (i = 0; i < link_num; i++) {
         if (link_used[i]) continue;
 
         if (links[i].lctgsmp == node) {
@@ -168,7 +169,9 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
 
     int ret;
     khint_t k;
-    for (int i = 0; i < node_num; i++) {
+    uint64_t i, j;
+    
+    for (i = 0; i < node_num; i++) {
         int node = node_arry[i];
 
         if (findint(visited_nodes, visited_num, node) == 0) {
@@ -187,12 +190,12 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
                 structure->num_links = temp_link_num;
                 structure->links = (DFSlinks*)malloc(temp_link_num * sizeof(DFSlinks));
 
-                for (int j = 0; j < temp_link_num; j++) {
+                for (j = 0; j < temp_link_num; j++) {
                     copy_DFSlinks(&structure->links[j], &tempDFSlinks[j]);
                 }
                 structure->num_nodes = temp_node_num;
                 structure->node = (int*)malloc(temp_node_num * sizeof(int));
-                for (int j = 0; j < temp_node_num; j++) {
+                for (j = 0; j < temp_node_num; j++) {
                     structure->node[j] = temp_node[j];
                 }
                 kh_value(h_structures, k) = structure;
@@ -222,7 +225,8 @@ static void dfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main
     }
 
     /* find all paths from node_s to node_t */
-    for (int i = 0; i < main_num; i++) {
+    uint64_t i;
+    for (i = 0; i < main_num; i++) {
         if (mainlinks[i].lctgsmp == node_s && s_utr != mainlinks[i].lutrsmp) {
             current_path->nodenum++;
             current_path->node = (int*)realloc(current_path->node, current_path->nodenum * sizeof(int));
@@ -273,7 +277,8 @@ void findSpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     dfs_algorithm(node1, node1utr, node2, node2utr, main_num, mainlinks, ctg_depth, &current_path, &all_paths, &path_count);
 
     nodePath* shortest_path = &all_paths[0];
-    for (int i = 1; i < path_count; i++) {
+    uint64_t i;
+    for (i = 1; i < path_count; i++) {
         if (all_paths[i].pathlen < shortest_path->pathlen) {
             shortest_path = &all_paths[i];
         }
@@ -281,13 +286,13 @@ void findSpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
 
     if (shortest_path->nodenum > 1) {
         log_info("-- %d", shortest_path->pathlen);
-        for (int i = 0; i < shortest_path->nodenum; i++) {
+        for (i = 0; i < shortest_path->nodenum; i++) {
             log_info("%d %d -> ", shortest_path->node[i], shortest_path->utr[i]);
         }
         log_info("\n");
     }
 
-    for (int i = 0; i < path_count; i++) {
+    for (i = 0; i < path_count; i++) {
         free(all_paths[i].node);
         free(all_paths[i].utr);
     }
@@ -314,7 +319,8 @@ static int path_up(pathScore* path_score, nodePath current_path, CtgDepth *ctg_d
     int* temp_mtarr = (int*)malloc(current_path.nodenum * sizeof(int));
     int* temp_ptarr = (int*)malloc(current_path.nodenum * sizeof(int));
 
-    for (int i = 0; i < current_path.nodenum; i++) 
+    uint64_t i;
+    for (i = 0; i < current_path.nodenum; i++) 
     {
         if (findint(pt_ctgarr, pt_ctg, path_node[i]) == 1 && findint(temp_ptarr, uniq_ptnum, path_node[i]) == 0) {
             temp_ptarr[uniq_ptnum] = path_node[i];
@@ -382,7 +388,7 @@ static int path_up(pathScore* path_score, nodePath current_path, CtgDepth *ctg_d
         // printf("The length of pt %ld\n", uniq_ptlen);
         // printf("Graph path %s %.2f%% %ld bp:\n-- ", path_score->type == 0 ? "C" : "L", rato * 100, path_score->path_len);
         // printf("Path upate: ");
-        for (int i = 0; i < node_num; i++) {
+        for (i = 0; i < node_num; i++) {
             path_score->path_node[i] = path_node[i];
             path_score->path_utr[i] = pathutr[i];
             // printf("%d %d -> ", path_node[i], pathutr[i]);
@@ -413,7 +419,8 @@ static void dfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, DF
     int* temp_mtarr = (int*)malloc(current_path->nodenum * sizeof(int));
     int uniq_mtnum = 0;
     uint64_t uniq_mtlen = 0;
-    for (int i = 0; i < current_path->nodenum; i++) 
+    uint64_t i;
+    for (i = 0; i < current_path->nodenum; i++) 
     {
         if (findint(mt_contigs, mt_num, current_path->node[i]) == 1 
             && findint(temp_mtarr, uniq_mtnum, current_path->node[i]) == 0
@@ -440,7 +447,7 @@ static void dfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, DF
     int* utr_array = s_utr == 3 ? link_s->node5utr : link_s->node3utr;
     int node_num = s_utr == 3 ? link_s->node5num : link_s->node3num;
     bool path_stop = true;
-    for (int i = 0; i < node_num; i++) 
+    for (i = 0; i < node_num; i++) 
     {
         int next_node = node_array[i];
         int next_utr = utr_array[i];
@@ -540,7 +547,8 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
     kh_copy(bfs_path.mpath[0].h_mito, h_mito);
     kh_copy(bfs_path.mpath[0].h_chloro, h_chloro);
 
-    for (int i = 0; i < 2*max_paths; i++) {
+    uint64_t i, j;
+    for (i = 0; i < 2*max_paths; i++) {
         bfs_path.flag[i] = 1;
     }
 
@@ -549,7 +557,7 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
     while (1)
     {
         int temp_end = 0;
-        for (int i = 0; i < dy_path_count; i++)
+        for (i = 0; i < dy_path_count; i++)
         {
             if (bfs_path.flag[i] == 0) continue;
             temp_end = 1;
@@ -598,7 +606,7 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
             } else if (tempmapnum > 1 && bfs_path.flag[i] == 1) {
                 mpath temp_mpath = bfs_path.mpath[i];
                 int dy_path_index = i;
-                for (int j = 0; j < tempmapnum; j++) 
+                for (j = 0; j < tempmapnum; j++) 
                 {
                     if (tempmap[0] == nodet && temputr[0] == utrt) {
                         bfs_path.flag[i] = 0;
@@ -653,7 +661,7 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
     }
 
     *path_t = 0;
-    for (int i = 0; i < bfs_path.path_count; i++) {
+    for (i = 0; i < bfs_path.path_count; i++) {
         // int sk = 0;
 
         // for (int j = 0; j < bfs_path.mpath[i].nodenum; j++)
@@ -688,7 +696,7 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
         (*path_t)++;
     }
 
-    for (int i = 0; i < bfs_path.path_count; i++) {
+    for (i = 0; i < bfs_path.path_count; i++) {
             free(bfs_path.mpath[i].path);
             free(bfs_path.mpath[i].utr);
             kh_destroy(node_num, bfs_path.mpath[i].h_mito);
@@ -718,7 +726,8 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
 
     int mt_depth = ctg_depth[node1 - 1].depth;
     float min_depth = mt_depth;
-    for (int i = 0; i < mt_num; i++) 
+    uint64_t i, j;
+    for (i = 0; i < mt_num; i++) 
     {
         if (findint(pt_contigs, pt_num, mt_contigs[i]) == 0) {
             if (ctg_depth[mt_contigs[i] - 1].depth < min_depth && ctg_depth[mt_contigs[i] - 1].len > 1000 && ctg_depth[mt_contigs[i] - 1].depth > 0.5*mt_depth) {
@@ -757,7 +766,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     //         mt_uniq++;
     //     }
     // }
-    for (int i = 0; i < mt_num; i++) {
+    for (i = 0; i < mt_num; i++) {
         if (findint(pt_contigs, pt_num, mt_contigs[i]) == 0) {
             int k = kh_put(node_num, h_mito, mt_contigs[i], &ret);
             
@@ -798,13 +807,13 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     // log_info("\n");
 
     /* Initialize chloroplast contig pass count to 0 */
-    for (int i = 0; i < pt_num; i++) 
+    for (i = 0; i < pt_num; i++) 
     {
         k = kh_put(node_num, h_chloro, pt_contigs[i], &ret);
         kh_value(h_chloro, k) = 0;  // Initially, no chloroplast contig is passed
     }
 
-    for (int i = 0; i < mt_num; i++) 
+    for (i = 0; i < mt_num; i++) 
     {
         k = kh_put(Ha_nodedepth, h_depth, mt_contigs[i], &ret);
         kh_value(h_depth, k) = ctg_depth[mt_contigs[i] - 1].depth;
@@ -827,7 +836,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         k = kh_put(Ha_nodelink, h_links, mt_contigs[0], &ret);
         kh_value(h_links, k) = node_links;
     } else {
-        for (int i = 0; i < mt_num; i++) 
+        for (i = 0; i < mt_num; i++) 
         {
             nodeLink node_links;
             node_links.node3num = 0;
@@ -838,7 +847,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
             node_links.node5utr = (int*) malloc(10 * sizeof(int));
 
             k = kh_put(Ha_nodelink, h_links, mt_contigs[i], &ret);
-            for (int j = 0; j < main_num; j++) 
+            for (j = 0; j < main_num; j++) 
             {
                 if (mainlinks[j].lctgsmp == mt_contigs[i] || mainlinks[j].rctgsmp == mt_contigs[i]) {
                     if (mainlinks[j].lctgsmp == mt_contigs[i] && mainlinks[j].lutrsmp == 3) {
@@ -891,7 +900,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
             int* pttempnode3utr = (int*)malloc(node_links.node3num * sizeof(int));
             int ptnode3num = 0;
 
-            for (int j = 0; j < node_links.node3num; j++) {
+            for (j = 0; j < node_links.node3num; j++) {
                 if (findint(pt_contigs, pt_num, node_links.node3[j]) == 0) {
                     mttempnode3[mtnode3num] = node_links.node3[j];
                     mttempnode3utr[mtnode3num] = node_links.node3utr[j];
@@ -904,7 +913,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
             }
 
 
-            for (int j = 0; j < node_links.node5num; j++) {
+            for (j = 0; j < node_links.node5num; j++) {
                 if (findint(pt_contigs, pt_num, node_links.node5[j]) == 0) {
                     mttempnode5[mtnode5num] = node_links.node5[j];
                     mttempnode5utr[mtnode5num] = node_links.node5utr[j];
@@ -917,14 +926,14 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
             }
             if (mtnode3num > 0) {
                 NodeUtrPair* mttempnode3pairs = (NodeUtrPair*)malloc(mtnode3num * sizeof(NodeUtrPair));
-                for (int j = 0; j < mtnode3num; j++) {
+                for (j = 0; j < mtnode3num; j++) {
                     mttempnode3pairs[j].node = mttempnode3[j];
                     mttempnode3pairs[j].utr = mttempnode3utr[j];
                 }
 
                 qsort(mttempnode3pairs, mtnode3num, sizeof(NodeUtrPair), compare_by_hash_value);
 
-                for (int j = 0; j < mtnode3num; j++) {
+                for (j = 0; j < mtnode3num; j++) {
                     mttempnode3[j] = mttempnode3pairs[j].node;
                     mttempnode3utr[j] = mttempnode3pairs[j].utr;
                 }
@@ -932,21 +941,21 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
             }
             if (mtnode5num > 0) {
                 NodeUtrPair* mttempnode5pairs = (NodeUtrPair*)malloc(mtnode5num * sizeof(NodeUtrPair));
-                for (int j = 0; j < mtnode5num; j++) {
+                for (j = 0; j < mtnode5num; j++) {
                     mttempnode5pairs[j].node = mttempnode5[j];
                     mttempnode5pairs[j].utr = mttempnode5utr[j];
                 }
 
                 qsort(mttempnode5pairs, mtnode5num, sizeof(NodeUtrPair), compare_by_hash_value);
 
-                for (int j = 0; j < mtnode5num; j++) {
+                for (j = 0; j < mtnode5num; j++) {
                     mttempnode5[j] = mttempnode5pairs[j].node;
                     mttempnode5utr[j] = mttempnode5pairs[j].utr;
                 }
                 free(mttempnode5pairs);
             }
 
-            for (int j = 0; j < node_links.node3num; j++) {
+            for (j = 0; j < node_links.node3num; j++) {
                 if (j < mtnode3num) {
                     node_links.node3[j] = mttempnode3[j];
                     node_links.node3utr[j] = mttempnode3utr[j];
@@ -955,7 +964,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
                     node_links.node3utr[j] = pttempnode3utr[j - mtnode3num];
                 }
             }
-            for (int j = 0; j < node_links.node5num; j++) {
+            for (j = 0; j < node_links.node5num; j++) {
                 if (j < mtnode5num) {
                     node_links.node5[j] = mttempnode5[j];
                     node_links.node5utr[j] = mttempnode5utr[j];
@@ -1027,13 +1036,13 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         return;
     }
 
-    for (int i = 0; i < path_t; i++) {
+    for (i = 0; i < path_t; i++) {
         int node_s = bfs_path[i].path[bfs_path[i].nodenum - 1];
         int utr_s = bfs_path[i].utr[bfs_path[i].nodenum - 1];
         current_path[i].nodenum = bfs_path[i].nodenum;
         current_path[i].node = (int*)malloc((max_node) * sizeof(int));
         current_path[i].utr = (int*)malloc((max_node) * sizeof(int));
-        for (int j = 0; j < bfs_path[i].nodenum; j++) {
+        for (j = 0; j < bfs_path[i].nodenum; j++) {
             current_path[i].node[j] = bfs_path[i].path[j];
             current_path[i].utr[j] = bfs_path[i].utr[j];
         }
@@ -1061,7 +1070,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         pthread_create(&threads[i], NULL, thread_dfs_m, (void*)&thread_args[i]);
 
     }
-    for (int i = 0; i < path_t; i++) {
+    for (i = 0; i < path_t; i++) {
         pthread_join(threads[i], NULL);
     }
     free(bfs_path);
@@ -1077,7 +1086,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         free(path_score.path_utr);
         kh_destroy(node_num, h_mito);
         kh_destroy(node_num, h_chloro);
-        for (int i = 0; i < path_t; i++)
+        for (i = 0; i < path_t; i++)
         {
             free(current_path[i].node);
             free(current_path[i].utr);
@@ -1085,7 +1094,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         return;
     }
 
-    for (int i = 0; i < path_t; i++)
+    for (i = 0; i < path_t; i++)
     {
         free(current_path[i].node);
         free(current_path[i].utr);
@@ -1119,7 +1128,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         
         struc_path->path_node = (int*)malloc((path_score.node_num) * sizeof(int));
         struc_path->path_utr = (int*)malloc((path_score.node_num) * sizeof(int));
-        for (int i = 0; i < path_score.node_num; i++) {
+        for (i = 0; i < path_score.node_num; i++) {
             if (i == 0) {
                 struc_path->path_node[i] = node1;
                 struc_path->path_utr[i] = node1utr;

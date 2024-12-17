@@ -37,6 +37,7 @@ SOFTWARE.
 #include <unistd.h> // access
 #include <sys/stat.h> // mkdir
 #include <dirent.h> // opendir, readdir, closedir, rewinddir, struct dirent
+#include <time.h>
 
 
 #include "log.h"
@@ -45,7 +46,8 @@ SOFTWARE.
 
 /* find a string in an array of strings */
 int findstr(const char* array[], int array_size, char* target) {
-    for (int i = 0; i < array_size; i++) {
+    uint64_t i;
+    for (i = 0; i < array_size; i++) {
         if (strcmp(array[i], target) == 0) {
             return 1;
         }
@@ -55,7 +57,8 @@ int findstr(const char* array[], int array_size, char* target) {
 
 
 int findint(const int array[], int array_size, int target) {
-    for (int i = 0; i < array_size; i++) {
+    uint64_t i;
+    for (i = 0; i < array_size; i++) {
         if (array[i] == target) {
             return 1;
         }
@@ -65,8 +68,9 @@ int findint(const int array[], int array_size, int target) {
 
 /* check if a string is a number */
 int is_numeric(const char *str) {
+    uint64_t i;
     if (str == NULL || *str == '\0') return 0;
-    for (int i = 0; i < strlen(str); i++) {
+    for (i = 0; i < strlen(str); i++) {
         if (!isdigit((unsigned char)str[i])) {
             return 0;
         }
@@ -123,13 +127,15 @@ char* pmat_path(const char *prog_name) {
 
 /* convert a string to lower case */
 void to_lower(char *str) {
-    for (int i = 0; str[i]; i++) {
+    uint64_t i;
+    for (i = 0; str[i]; i++) {
         str[i] = tolower(str[i]);
     }
 }
 
 void to_upper(char *str) {
-    for (int i = 0; str[i]; i++) {
+    uint64_t i;
+    for (i = 0; str[i]; i++) {
         str[i] = toupper(str[i]);
     }
 }
@@ -150,16 +156,22 @@ int rm_contig(char *str) {
     return atoi(str);
 }
 
+void sleep_ms(long milliseconds) {
+    struct timespec req = {0};
+    req.tv_sec = milliseconds / 1000;
+    req.tv_nsec = (milliseconds % 1000) * 1000000;
+    nanosleep(&req, NULL);
+}
 
 void removeUnique(int arr[], int *size) {
     if (*size <= 1) return;
-
+    uint64_t i, j;
     bool *isDuplicate = (bool *)calloc(*size, sizeof(bool));
     int newSize = 0;
 
-    for (int i = 0; i < *size - 1; i++) {
+    for (i = 0; i < *size - 1; i++) {
         if (isDuplicate[i]) continue;
-        for (int j = i + 1; j < *size; j++) {
+        for (j = i + 1; j < *size; j++) {
             if (arr[i] == arr[j]) {
                 isDuplicate[i] = true;
                 isDuplicate[j] = true;
@@ -168,7 +180,7 @@ void removeUnique(int arr[], int *size) {
         }
     }
 
-    for (int i = 0; i < *size; i++) {
+    for (i = 0; i < *size; i++) {
         if (isDuplicate[i]) {
             arr[newSize++] = arr[i];
         }
@@ -183,11 +195,11 @@ void removeDup(int arr[], int *size) {
     if (*size <= 1) return;
 
     int newSize = 1;
-
-    for (int i = 1; i < *size; i++) {
+    uint64_t i, j;
+    for (i = 1; i < *size; i++) {
         bool isDuplicate = false;
         
-        for (int j = 0; j < newSize; j++) {
+        for (j = 0; j < newSize; j++) {
             if (arr[i] == arr[j]) {
                 isDuplicate = true;
                 break;
@@ -238,8 +250,8 @@ int remove_quote(const char *str) {
 
 void remove_element(int arr[], int *size, int value) {
     int new_size = 0;
-
-    for (int i = 0; i < *size; i++) {
+    uint64_t i;
+    for (i = 0; i < *size; i++) {
         if (arr[i] != value) {
             arr[new_size++] = arr[i];
         }
@@ -288,8 +300,8 @@ int is_digits(const char *str) {
     if (str == NULL || *str == '\0') {
         return 0;
     }
-
-    for (size_t i = 0; i < strlen(str); i++) {
+    uint64_t i;
+    for (i = 0; i < strlen(str); i++) {
         if (!isdigit((unsigned char)str[i])) {
             return 0;
         }
@@ -298,23 +310,14 @@ int is_digits(const char *str) {
 }
 
 int which_executable(const char *exe) {
-    if (access(exe, X_OK) == 0) {
+    char command[4096];
+    snprintf(command, sizeof(command), "command -v %s > /dev/null 2>&1", exe);
+    
+    if (system(command) == 0) {
         return 1;
-    } else {
-        if (strchr(exe, '/') == NULL) {
-            char command[1024];
-            snprintf(command, sizeof(command), "which %s > /dev/null 2>&1", exe);
-            
-            if (system(command) == 0) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-
-        return 0;
-        
     }
+    
+    return 0;
 }
 
 /* create and check files and directories */
@@ -434,7 +437,7 @@ void execute_command(const char* command, int verbose, int log_output) {
     if (verbose) {
         log_info("Running command: %s\n", command);
     }
-
+    uint64_t i;
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         log_message(ERROR, "Failed to create pipe: %s", strerror(errno));
@@ -472,12 +475,13 @@ void execute_command(const char* command, int verbose, int log_output) {
             bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
             if (bytes_read > 0) {
                 buffer[bytes_read] = '\0';
-                for (size_t i = 0; i < bytes_read; i++) {
+                for (i = 0; i < bytes_read; i++) {
                     if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
                         line_buffer[line_buffer_pos] = '\0';
                         if (strstr(line_buffer, "Warning: [blastn]") == NULL && 
                         // if (strstr(line_buffer, "Warning: [blastn] Examining 5 or more matches is recommended") == NULL && 
                             // strstr(line_buffer, "Warning: [blastn] Query is Empty") == NULL &&
+                            strstr(line_buffer, "Examining 5 or more matches is recommended") == NULL &&
                             strstr(line_buffer, "v3.0 (20140410_1040)") == NULL &&
                             strstr(line_buffer, "GenomeScope analyzing") == NULL &&
                             strstr(line_buffer, "Model converged") == NULL) {
@@ -502,7 +506,7 @@ void execute_command(const char* command, int verbose, int log_output) {
                 break;
             } else {
                 // No data available, sleep for a short time
-                usleep(10000);  // Sleep for 10ms
+                sleep_ms(10);  // Sleep for 10ms
             }
         }
 
@@ -527,7 +531,7 @@ int ass_command(const char* command, int verbose, int log_output) {
     if (verbose) {
         log_info("Running command: %s\n", command);
     }
-
+    uint64_t i;
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         log_message(ERROR, "Failed to create pipe: %s", strerror(errno));
@@ -565,7 +569,7 @@ int ass_command(const char* command, int verbose, int log_output) {
             bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
             if (bytes_read > 0) {
                 buffer[bytes_read] = '\0';
-                for (size_t i = 0; i < bytes_read; i++) {
+                for (i = 0; i < bytes_read; i++) {
                     if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
                         line_buffer[line_buffer_pos] = '\0';
 
@@ -606,7 +610,7 @@ int ass_command(const char* command, int verbose, int log_output) {
                 break;
             } else {
                 // No data available, sleep for a short time
-                usleep(10000);  // Sleep for 10ms
+                sleep_ms(10);  // Sleep for 10ms
             }
         }
 
@@ -752,18 +756,18 @@ int validate_fastq_file(const char* filename) {
 
 void maparr_100(int32_t *data, int size, uint8_t *mapped_data) {
     int32_t min = data[0], max = data[0];
-    
-    for (int i = 1; i < size; i++) {
+    uint64_t i;
+    for (i = 1; i < size; i++) {
         if (data[i] < min) min = data[i];
         if (data[i] > max) max = data[i];
     }
     
     if (max == min) {
-        for (int i = 0; i < size; i++) {
+        for (i = 0; i < size; i++) {
             mapped_data[i] = 50;
         }
     } else {
-        for (int i = 0; i < size; i++) {
+        for (i = 0; i < size; i++) {
             double mapped = (data[i] - min) * 99.0 / (max - min) + 1;
             mapped_data[i] = (uint8_t)(mapped < 1 ? 1 : (mapped > 100 ? 100 : mapped));
         }

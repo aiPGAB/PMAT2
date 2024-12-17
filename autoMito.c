@@ -63,6 +63,7 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
 
     mkdirfiles(opts->output_file);
     uint64_t genomesize_bp = 0;
+    uint64_t i;
     if (strcmp(readstype, "hifi") != 0) {
         if (opts->genomesize != NULL) {
             to_lower(opts->genomesize);
@@ -93,6 +94,16 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             char* gkmer_dir;
             char* gkmer_histo;
 
+            char* dir = dirname(strdup(exe_path));
+            size_t glen = strlen(dir) + strlen("/lib/genomescope.R") + 1;
+            char* genomescope = (char*) malloc(glen);
+            snprintf(genomescope, glen, "%s/lib/genomescope.R", dir);
+            if (which_executable(genomescope) == 0) {
+                log_message(ERROR, "Failed to find genomescope.R in %s/lib", dir);
+                exit(EXIT_FAILURE);
+            }
+            free(dir); 
+
             gkmer_dir = (char*) malloc(strlen(opts->output_file) + strlen("/gkmer") + 1);
             strcpy(gkmer_dir, opts->output_file);
             strcat(gkmer_dir, "/gkmer");
@@ -102,7 +113,6 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             strcpy(gkmer_histo, opts->output_file);
             strcat(gkmer_histo, "/gkmer/gkmer_histo.txt");
 
-
             yak_copt_t opt;
             yak_copt_init(&opt);
             opt.k = opts->kmersize;
@@ -110,12 +120,6 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             
             gkmerAPI(&opt, opts->input_file, gkmer_histo); //*
 
-            char* dir = dirname(strdup(exe_path));
-            size_t glen = strlen(dir) + strlen("/lib/genomescope.R") + 1;
-            char* genomescope = (char*) malloc(glen);
-            snprintf(genomescope, glen, "%s/lib/genomescope.R", dir);
-            check_executable(genomescope);
-            free(dir); 
             char* command = NULL;
             size_t cmd_len = snprintf(NULL, 0, "%s %s %d 15000 %s 1000 0", 
                 genomescope, gkmer_histo, opts->kmersize, gkmer_dir) + 1;
@@ -422,7 +426,7 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         pt_ctg_threshold = 1;
         pt_dynseeds = calloc(pt_ctg_threshold, sizeof(int));
         PtHitseeds(exe_path, "pt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, pt_dynseeds, pt_ctg_threshold, 2*seq_depth);
-        for (int i = 0; i < pt_ctg_threshold; i++) {
+        for (i = 0; i < pt_ctg_threshold; i++) {
             if (pt_dynseeds[i] != 0) {
                 pt_num_dynseeds++;
             }
@@ -458,7 +462,7 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         }
         mt_dynseeds = calloc(mt_ctg_threshold, sizeof(int));
         MtHitseeds(exe_path, "mt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &mt_dynseeds, &mt_ctg_threshold, 1.5*seq_depth);
-        for (int i = 0; i < mt_ctg_threshold; i++) {
+        for (i = 0; i < mt_ctg_threshold; i++) {
             if (mt_dynseeds[i] != 0) {
                 mt_num_dynseeds++;
             }
@@ -495,7 +499,7 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         }
         mt_dynseeds = calloc(mt_ctg_threshold, sizeof(int));
         AnHitseeds(exe_path, "mt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &mt_dynseeds, &mt_ctg_threshold, 2*seq_depth);
-        for (int i = 0; i < mt_ctg_threshold; i++) {
+        for (i = 0; i < mt_ctg_threshold; i++) {
             if (mt_dynseeds[i] != 0) {
                 mt_num_dynseeds++;
             }
@@ -531,7 +535,7 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         }
         mt_dynseeds = calloc(mt_ctg_threshold, sizeof(int));
         FuHitseeds(exe_path, "mt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &mt_dynseeds, &mt_ctg_threshold, 2*seq_depth);
-        for (int i = 0; i < mt_ctg_threshold; i++) {
+        for (i = 0; i < mt_ctg_threshold; i++) {
             if (mt_dynseeds[i] != 0) {
                 mt_num_dynseeds++;
             }
@@ -555,12 +559,12 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         free(mt_dynseeds);        
     }
 
-    for (int i = 0; i < num_ctg; i++) {
+    for (i = 0; i < num_ctg; i++) {
         free(ctgdepth[i].ctg);
     }
     free(ctgdepth);
 
-    for (int i = 0; i < num_links; i++) {
+    for (i = 0; i < num_links; i++) {
         free(ctglinks[i].lutr);  free(ctglinks[i].rutr);
     }
     

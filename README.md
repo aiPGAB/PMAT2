@@ -30,9 +30,9 @@ make
 ```
 Install by downloading the source codes
 ```sh
-wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.0.1.tar.gz
-tar -zxvf PMAT2-2.0.1.tar.gz
-cd PMAT2-2.0.1
+wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.0.2.tar.gz
+tar -zxvf PMAT2-2.0.2.tar.gz
+cd PMAT2-2.0.2
 make
 ./PMAT --help
 ```
