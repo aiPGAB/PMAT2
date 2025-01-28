@@ -1,8 +1,23 @@
-# <p name="h1">Contact</p>
+<p  align="center"><img src="https://github.com/user-attachments/assets/8c997c9e-d74f-4521-8bf1-8173b777bb86" style="width: 50%; height: auto;">
+
+<div align="center">
+
+**An efficient assembly toolkit for organellar genomes**
+
+</div>
+
+***
+
+<div align="center">
+
+[![Release Version](https://img.shields.io/github/v/release/aiPGAB/PMAT2?style=flat-square)](https://github.com/aiPGAB/PMAT2/releases)
+[![License](https://img.shields.io/github/license/aiPGAB/PMAT2?style=flat-square)](LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/aiPGAB/PMAT2?style=flat-square)](https://github.com/aiPGAB/PMAT2/commits)
+
+</div>
+
 If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
 
-# <p name="h1">PMAT2</p> 
-PMAT2 is an efficient assembly toolkit for assembling organellar genomes using third-generation (HiFi/CLR/ONT) sequencing data.
 
 - [PMAT2](#h1)
 - [Installation](#C1)
@@ -15,7 +30,7 @@ PMAT2 is an efficient assembly toolkit for assembling organellar genomes using t
   - [Demo2](#C6.2)
   - [Demo3](#C6.3)
   - [Demo4](#C6.4)
-- [Resulting files](#C7)
+- [Output files](#C7)
 - [Version](#C8)
 - [Citing PMAT2](#C9)
 
@@ -30,16 +45,16 @@ make
 ```
 Install by downloading the source codes
 ```sh
-wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.0.2.tar.gz
-tar -zxvf PMAT2-2.0.2.tar.gz
-cd PMAT2-2.0.2
+wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.0.5.tar.gz
+tar -zxvf PMAT2-2.0.5.tar.gz
+cd PMAT2-2.0.5
 make
 ./PMAT --help
 ```
 
 ## <a name="C2">Requirement</a>
 
-- [**BLASTn**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)  Needs to be installed in `PATH`.
+- [**BLASTn > 2.2.29**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)  Needs to be installed in `PATH`.
 - [**Singularity**](https://github.com/YanshuQu/runAssembly) or [**Apptainer**](https://github.com/apptainer/apptainer/blob/main/INSTALL.md) is required for PMAT2. You can find installation instructions [here](https://github.com/YanshuQu/runAssembly).
 - [**Canu > v2.0**](https://github.com/marbl/canu) or [**NextDenovo**](https://github.com/Nextomics/NextDenovo) is required for CLR or ONT sequencing data.
 - [**zlib**](https://www.zlib.net/) Needs to be installed in `PATH`.
@@ -86,8 +101,8 @@ Optional options:
 2. If you want to use nextdenovo for ONT/CLR error correction, you can skip providing a cfg file, and the program will generate a temporary cfg file automatically.
 3. `-k`: If seqtype is hifi, skip kmer frequency estimation and genome size estimation.
 4. `-m`: Keep sequence data in memory to speed up computation.
-5. `-I`: The default value is 40 bp. If the assembly graph is complex, you can increase it appropriately.
-6. `-L`: minimum overlap identity, the default is 90, if it is HiFi data, you can increase it appropriately.
+5. `-I`: The default value is 90 bp. If the assembly graph is complex, you can increase it appropriately.
+6. `-L`: minimum overlap identity, the default is 40, if it is HiFi data, you can increase it appropriately.
 
 
 ### <a name="C5">graphBuild</a>
@@ -179,27 +194,33 @@ ascp -v -QT -l 400m -P33001 -k1 -i ~/.aspera/connect/etc/asperaweb_id_dsa.openss
 PMAT autoMito -i SRR12202038_1.fastq.gz -o ./test_ont -t ont -S canu -C path/canu -m
 ```
 ---
+
 |Dataset|Size|Options|Run time|Coverage|
 |:-------|:----:|:--------:|:------------:|:-------:|
-|Arabidopsis thaliana|550Mb|`-T 50`|9m08s|4x|
-|Arabidopsis thaliana|550Mb|`-T 50 -m`|9m30s|4x|
-|Malus domestica|540Mb|`-T 50`|7m26s|<1x|
-|Malus domestica|540Mb|`-T 50 -m`|7m35s|<1x|
-|Juncus effusus|216Mb|`-T 50`|4m47s|<1x|
+|Arabidopsis thaliana|550Mb|`-T 50`|6m27s|4x|
+|Arabidopsis thaliana|550Mb|`-T 50 -m`|6m38s|4x|
+|Malus domestica|540Mb|`-T 50`|7m38s|<1x|
+|Malus domestica|540Mb|`-T 50 -m`|7m19s|<1x|
+|Juncus effusus|216Mb|`-T 50`|4m56s|<1x|
 |Juncus effusus|216Mb|`-T 50 -m`|4m48s|<1x|
 
+## <a name="C7">Output files</a>
 
-## <a name="C7">Resulting files</a>
-- The output files include:
-  - `*/assembly_result/PMATAllContigs.fna`, The assembly result contains contig sequences
-  - `*/assembly_result/PMATContigGraph.txt`, The assembly result contains contig linking relationships
-  - `*/gfa_result/PMAT_mt_raw.gfa`, The initial assembly graph of mitogenome
-  - `*/gfa_result/PMAT_mt_main.gfa`, The optimized assembly graph of mitogenome
-  - `*/gfa_result/PMAT_mt.fasta`, The final assembly result of mitogenome
-  - `*/gfa_result/PMAT_pt_raw.gfa`, The initial assembly graph of the chloroplast genome
-  - `*/gfa_result/PMAT_pt_main.gfa`, The optimized assembly graph of the chloroplast genome
-  - `*/gfa_result/PMAT_pt_main.fa`, The final assembly result of the chloroplast genome
-  - `*/gkmer_result/gkmer`, The kmer count file for estimating genome size
+```plaintext
+output_dir/
+├── assembly_result/
+│   ├── PMATAllContigs.fna       # Assembly contigs
+│   └── PMATContigGraph.txt      # Contig relationships
+├── gfa_result/
+│   ├── PMAT_mt_raw.gfa          # Initial mitogenome graph
+│   ├── PMAT_mt_main.gfa         # Optimized mitogenome graph
+│   ├── PMAT_mt.fasta            # Final mitogenome assembly
+│   ├── PMAT_pt_raw.gfa          # Initial chloroplast graph
+│   ├── PMAT_pt_main.gfa         # Optimized chloroplast graph
+│   └── PMAT_pt_main.fa          # Final chloroplast assembly
+└── gkmer_result/
+    └── gkmer                    # Kmer statistics
+```
 
 ## <a name="C8">Version</a>
 

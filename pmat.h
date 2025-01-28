@@ -36,6 +36,7 @@ typedef struct {
     char *seqtype;
     char *runassembly;
     char *genomesize;
+    char *organelles;    // Organelles type (mt/pt)
     int8_t task;
     char *correct_software;
     char *canu_path;

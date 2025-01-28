@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include <stdint.h>
 #include "hitseeds.h"
-#include "DFSseed.h"
+#include "BFSseed.h"
 #include "khash.h"
 
 
@@ -47,13 +47,13 @@ typedef struct {
 } pathScore;
 
 typedef struct {
-    DFSlinks* links;
+    BFSlinks* links;
     int num_links;
     int* node;
     int num_nodes;
-} DFSstructure;
+} BFSstructure;
 
-KHASH_MAP_INIT_INT(Ha_structures, DFSstructure*)
+KHASH_MAP_INIT_INT(Ha_structures, BFSstructure*)
 KHASH_MAP_INIT_INT(Ha_nodeseq, char*)
 
 typedef struct {
@@ -65,25 +65,25 @@ typedef struct {
 void addseq(const char* allgraph, const char* all_fna, CtgDepth* ctgdepth);
 
 /* raw gfa && main gfa */
-void optgfa(int num_dynseeds, int** dynseeds, DFSlinks** dfslinks, int* num_dfslinks, 
+void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfslinks, 
             CtgDepth* ctgdepth, const char* output, const char* all_fna, const char* allgraph, 
             const char* organelles_type, int* mainseeds_num, int** mainseeds, int interfering_ctg_num, 
             int* interfering_ctg, int taxo, float filter_depth, char* cutseq);
 
 /* findSpath: find the shortest path between two contigs */
 void findSpath(int node1, int node1utr, int node2, int node2utr, 
-              int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth);
+              int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth);
 
-/* DFS_structure: find the DFS structure of the graph */
-uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures);
+/* BFS_structure: find the BFS structure of the graph */
+uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures);
 
 /* findMpath: find the most likely path between two contigs */
-void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth, 
+void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth, 
     int* mt_contigs, int mt_num, int* pt_contigs, int pt_num, int* flag_err, float* mt_ratio, int taxo, pathScore *struc_path);
 
-/* copy DFSlinks */
-void copy_DFSlinks(DFSlinks* dest, const DFSlinks* src);
-// void free_DFSlinks(DFSlinks *links, int num_links);
+/* copy BFSlinks */
+void copy_BFSlinks(BFSlinks* dest, const BFSlinks* src);
+// void free_BFSlinks(BFSlinks *links, int num_links);
 
 /* convert path to fasta */
 void path2fa(pathScore *path, int ps_num, khash_t(Ha_nodeseq)* node_seq, const char *output);

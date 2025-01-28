@@ -37,7 +37,7 @@ SOFTWARE.
 #include "misc.h"
 #include "seqtools.h"
 #include "hitseeds.h"
-#include "DFSseed.h"
+#include "BFSseed.h"
 #include "graphtools.h"
 #include "gkmer.h"
 #include "pmat.h"
@@ -436,55 +436,58 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         int* pt_mainseeds = NULL;
         if (pt_num_dynseeds > 0) {
             filter_depth = 0.3 * ctgdepth[pt_dynseeds[0] - 1].depth;
-            DFSlinks* pt_dfslinks = NULL;
-            int pt_num_DFSlinks = 0;
-            DFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_dfslinks, &pt_num_DFSlinks);
-            pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_DFSlinks * 2);
-            optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_dfslinks, &pt_num_DFSlinks, ctgdepth, opts->output_file, 
+            BFSlinks* pt_bfslinks = NULL;
+            int pt_num_BFSlinks = 0;
+            BFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_bfslinks, &pt_num_BFSlinks);
+            pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_BFSlinks * 2);
+            optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_bfslinks, &pt_num_BFSlinks, ctgdepth, opts->output_file, 
                     assembly_fna, assembly_graph, "pt", &pt_mainseeds_num, &pt_mainseeds, 0, NULL, 0, filter_depth, cut_seq);
             
-            // for (int i = 0; i < pt_num_DFSlinks; i++) {
-            //     free(pt_dfslinks[i].lctg); free(pt_dfslinks[i].lutr); free(pt_dfslinks[i].rctg); free(pt_dfslinks[i].rutr);
+            // for (int i = 0; i < pt_num_BFSlinks; i++) {
+            //     free(pt_bfslinks[i].lctg); free(pt_bfslinks[i].lutr); free(pt_bfslinks[i].rctg); free(pt_bfslinks[i].rutr);
             // }
-            free(pt_dfslinks); 
+            free(pt_bfslinks); 
         }
         free(pt_dynseeds);
 
-        /* mt */
+        if (strcmp(opts->organelles, "mt") == 0) {
+            /* mt */
 
-        int mt_ctg_threshold = 6;
-        int mt_num_dynseeds = 0;
-        int* mt_dynseeds = NULL;
-        if ((2 * seq_depth) > 1.5) {
-            filter_depth = 2 * seq_depth;
-        } else {
-            filter_depth = 1.5;
-        }
-        mt_dynseeds = calloc(mt_ctg_threshold, sizeof(int));
-        MtHitseeds(exe_path, "mt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &mt_dynseeds, &mt_ctg_threshold, 1.5*seq_depth);
-        for (i = 0; i < mt_ctg_threshold; i++) {
-            if (mt_dynseeds[i] != 0) {
-                mt_num_dynseeds++;
+            int mt_ctg_threshold = 6;
+            int mt_num_dynseeds = 0;
+            int* mt_dynseeds = NULL;
+            if ((2 * seq_depth) > 1.5) {
+                filter_depth = 2 * seq_depth;
+            } else {
+                filter_depth = 1.5;
             }
+            mt_dynseeds = calloc(mt_ctg_threshold, sizeof(int));
+            MtHitseeds(exe_path, "mt", assembly_fna, opts->output_file, opts->cpu, num_ctg, ctgdepth, &mt_dynseeds, &mt_ctg_threshold, 1.5*seq_depth);
+            for (i = 0; i < mt_ctg_threshold; i++) {
+                if (mt_dynseeds[i] != 0) {
+                    mt_num_dynseeds++;
+                }
+            }
+
+            if (mt_num_dynseeds > 0) {
+                BFSlinks* mt_bfslinks = NULL;
+                int mt_num_BFSlinks = 0;
+                BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_bfslinks, &mt_num_BFSlinks);
+                int mt_mainseeds_num = 0;
+                int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_BFSlinks * 2);
+                optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_bfslinks, &mt_num_BFSlinks, ctgdepth, opts->output_file, 
+                        assembly_fna, assembly_graph, "mt", &mt_mainseeds_num, &mt_mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, cut_seq);
+                
+                // for (int i = 0; i < mt_num_BFSlinks; i++) {
+                //     free(mt_bfslinks[i].lctg); free(mt_bfslinks[i].lutr); free(mt_bfslinks[i].rctg); free(mt_bfslinks[i].rutr);
+                // }
+                free(mt_bfslinks); 
+                // free(mt_mainseeds);
+            }
+            free(mt_dynseeds);
+            free(pt_mainseeds);
         }
 
-        if (mt_num_dynseeds > 0) {
-            DFSlinks* mt_dfslinks = NULL;
-            int mt_num_DFSlinks = 0;
-            DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_dfslinks, &mt_num_DFSlinks);
-            int mt_mainseeds_num = 0;
-            int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_DFSlinks * 2);
-            optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_dfslinks, &mt_num_DFSlinks, ctgdepth, opts->output_file, 
-                    assembly_fna, assembly_graph, "mt", &mt_mainseeds_num, &mt_mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, cut_seq);
-            
-            // for (int i = 0; i < mt_num_DFSlinks; i++) {
-            //     free(mt_dfslinks[i].lctg); free(mt_dfslinks[i].lutr); free(mt_dfslinks[i].rctg); free(mt_dfslinks[i].rutr);
-            // }
-            free(mt_dfslinks); 
-            // free(mt_mainseeds);
-        }
-        free(mt_dynseeds);
-        free(pt_mainseeds);
 
     } else if (opts->taxo == 1) {
         /* animals */
@@ -505,19 +508,19 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             }
         }
         if (mt_num_dynseeds > 0) {
-            DFSlinks* mt_dfslinks = NULL;
-            int mt_num_DFSlinks = 0;
+            BFSlinks* mt_bfslinks = NULL;
+            int mt_num_BFSlinks = 0;
             filter_depth = 0.3 * ctgdepth[mt_dynseeds[0] - 1].depth;
-            DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_dfslinks, &mt_num_DFSlinks);
+            BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_bfslinks, &mt_num_BFSlinks);
             int mt_mainseeds_num = 0;
-            int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_DFSlinks * 2);
-            optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_dfslinks, &mt_num_DFSlinks, ctgdepth, opts->output_file, 
+            int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_BFSlinks * 2);
+            optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_bfslinks, &mt_num_BFSlinks, ctgdepth, opts->output_file, 
                     assembly_fna, assembly_graph, "mt", &mt_mainseeds_num, &mt_mainseeds, 0, NULL, 1, filter_depth, cut_seq);
             
-            // for (int i = 0; i < mt_num_DFSlinks; i++) {
-            //     free(mt_dfslinks[i].lctg); free(mt_dfslinks[i].lutr); free(mt_dfslinks[i].rctg); free(mt_dfslinks[i].rutr);
+            // for (int i = 0; i < mt_num_BFSlinks; i++) {
+            //     free(mt_bfslinks[i].lctg); free(mt_bfslinks[i].lutr); free(mt_bfslinks[i].rctg); free(mt_bfslinks[i].rutr);
             // }
-            free(mt_dfslinks); 
+            free(mt_bfslinks); 
             free(mt_mainseeds);
         }
         free(mt_dynseeds);        
@@ -541,19 +544,19 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             }
         }
         if (mt_num_dynseeds > 0) {
-            DFSlinks* mt_dfslinks = NULL;
-            int mt_num_DFSlinks = 0;
+            BFSlinks* mt_bfslinks = NULL;
+            int mt_num_BFSlinks = 0;
             filter_depth = 0.3 * ctgdepth[mt_dynseeds[0] - 1].depth;
-            DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_dfslinks, &mt_num_DFSlinks);
+            BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &mt_num_dynseeds, &mt_dynseeds, seq_depth, filter_depth, &mt_bfslinks, &mt_num_BFSlinks);
             int mt_mainseeds_num = 0;
-            int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_DFSlinks * 2);
-            optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_dfslinks, &mt_num_DFSlinks, ctgdepth, opts->output_file, 
+            int* mt_mainseeds = (int*) malloc(sizeof(int) * mt_num_BFSlinks * 2);
+            optgfa(mt_num_dynseeds, &mt_dynseeds, &mt_bfslinks, &mt_num_BFSlinks, ctgdepth, opts->output_file, 
                     assembly_fna, assembly_graph, "mt", &mt_mainseeds_num, &mt_mainseeds, 0, NULL, 1, filter_depth, cut_seq);
             
-            // for (int i = 0; i < mt_num_DFSlinks; i++) {
-            //     free(mt_dfslinks[i].lctg); free(mt_dfslinks[i].lutr); free(mt_dfslinks[i].rctg); free(mt_dfslinks[i].rutr);
+            // for (int i = 0; i < mt_num_BFSlinks; i++) {
+            //     free(mt_bfslinks[i].lctg); free(mt_bfslinks[i].lutr); free(mt_bfslinks[i].rctg); free(mt_bfslinks[i].rutr);
             // }
-            free(mt_dfslinks); 
+            free(mt_bfslinks); 
             free(mt_mainseeds);
         }
         free(mt_dynseeds);        

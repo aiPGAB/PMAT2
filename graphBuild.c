@@ -35,7 +35,7 @@ SOFTWARE.
 #include "misc.h"
 #include "seqtools.h"
 #include "hitseeds.h"
-#include "DFSseed.h"
+#include "BFSseed.h"
 #include "graphtools.h"
 #include "gkmer.h"
 #include "pmat.h"
@@ -168,14 +168,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int* pt_mainseeds = NULL;
                 if (pt_num_dynseeds > 0) {
                     filter_depth = 0.3 * ctgdepth[pt_dynseeds[0] - 1].depth;
-                    DFSlinks* pt_dfslinks = NULL;
-                    int pt_num_DFSlinks = 0;
-                    DFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_dfslinks, &pt_num_DFSlinks);
-                    pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_DFSlinks * 2);
-                    optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_dfslinks, &pt_num_DFSlinks, ctgdepth, opts->output_file, 
+                    BFSlinks* pt_bfslinks = NULL;
+                    int pt_num_BFSlinks = 0;
+                    BFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_bfslinks, &pt_num_BFSlinks);
+                    pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_BFSlinks * 2);
+                    optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_bfslinks, &pt_num_BFSlinks, ctgdepth, opts->output_file, 
                             opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &pt_mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
                     
-                    free(pt_dfslinks); 
+                    free(pt_bfslinks); 
                 }
                 free(pt_dynseeds);
 
@@ -199,14 +199,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                         filter_depth = opts->depth;
                     }
 
-                    DFSlinks* dfslinks = NULL;
-                    int num_DFSlinks = 0;
-                    DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                    BFSlinks* bfslinks = NULL;
+                    int num_BFSlinks = 0;
+                    BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                     int mt_mainseeds_num = 0;
-                    int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                    optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, opts->cutseq);
+                    int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                    optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, opts->cutseq);
                     
-                    free(dfslinks);
+                    free(bfslinks);
                 }
                 free(dynseeds);
                 free(pt_mainseeds);
@@ -227,14 +227,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                         filter_depth = opts->depth;
                     }
 
-                    DFSlinks* dfslinks = NULL;
-                    int num_DFSlinks = 0;
-                    DFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                    BFSlinks* bfslinks = NULL;
+                    int num_BFSlinks = 0;
+                    BFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                     int pt_mainseeds_num = 0;
-                    int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                    optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &mainseeds, 0 ,NULL, 0, filter_depth, opts->cutseq);
+                    int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                    optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &mainseeds, 0 ,NULL, 0, filter_depth, opts->cutseq);
                     
-                    free(dfslinks);
+                    free(bfslinks);
                     free(mainseeds);
                 }
                 free(dynseeds);
@@ -257,14 +257,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                         filter_depth = opts->depth;
                     }
 
-                    DFSlinks* dfslinks = NULL;
-                    int num_DFSlinks = 0;
-                    DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                    BFSlinks* bfslinks = NULL;
+                    int num_BFSlinks = 0;
+                    BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                     int mt_mainseeds_num = 0;
-                    int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                    optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
+                    int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                    optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
                     
-                    free(dfslinks);
+                    free(bfslinks);
                     free(mainseeds);
                 }
                 free(dynseeds);
@@ -287,14 +287,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                         filter_depth = opts->depth;
                     }
 
-                    DFSlinks* dfslinks = NULL;
-                    int num_DFSlinks = 0;
-                    DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                    BFSlinks* bfslinks = NULL;
+                    int num_BFSlinks = 0;
+                    BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                     int mt_mainseeds_num = 0;
-                    int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                    optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
+                    int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                    optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
                     
-                    free(dfslinks);
+                    free(bfslinks);
                     free(mainseeds);
                 }
                 free(dynseeds);
@@ -330,14 +330,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                 int* pt_mainseeds = NULL;
                 if (pt_num_dynseeds > 0) {
                     filter_depth = 0.3 * ctgdepth[pt_dynseeds[0] - 1].depth;
-                    DFSlinks* pt_dfslinks = NULL;
-                    int pt_num_DFSlinks = 0;
-                    DFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_dfslinks, &pt_num_DFSlinks);
-                    pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_DFSlinks * 2);
-                    optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_dfslinks, &pt_num_DFSlinks, ctgdepth, opts->output_file, 
+                    BFSlinks* pt_bfslinks = NULL;
+                    int pt_num_BFSlinks = 0;
+                    BFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &pt_num_dynseeds, &pt_dynseeds, seq_depth, filter_depth, &pt_bfslinks, &pt_num_BFSlinks);
+                    pt_mainseeds = (int*) malloc(sizeof(int) * pt_num_BFSlinks * 2);
+                    optgfa(pt_num_dynseeds, &pt_dynseeds, &pt_bfslinks, &pt_num_BFSlinks, ctgdepth, opts->output_file, 
                             opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &pt_mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
                     
-                    free(pt_dfslinks); 
+                    free(pt_bfslinks); 
                 }
                 free(pt_dynseeds);
                 
@@ -352,14 +352,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     filter_depth = opts->depth;
                 }
 
-                DFSlinks* dfslinks = NULL;
-                int num_DFSlinks = 0;
-                DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                BFSlinks* bfslinks = NULL;
+                int num_BFSlinks = 0;
+                BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                 int mt_mainseeds_num = 0;
-                int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, opts->cutseq);
+                int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, pt_mainseeds_num, pt_mainseeds, 0, filter_depth, opts->cutseq);
                 
-                free(dfslinks);
+                free(bfslinks);
                 free(mainseeds);
                 free(pt_mainseeds);
             } else if (strcmp(opts->organelles, "pt") == 0) {
@@ -370,14 +370,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     filter_depth = opts->depth;
                 }
 
-                DFSlinks* dfslinks = NULL;
-                int num_DFSlinks = 0;
-                DFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                BFSlinks* bfslinks = NULL;
+                int num_BFSlinks = 0;
+                BFSseeds("pt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                 int pt_mainseeds_num = 0;
-                int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &mainseeds, 0 ,NULL, 0, filter_depth, opts->cutseq);
+                int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &mainseeds, 0 ,NULL, 0, filter_depth, opts->cutseq);
                 
-                free(dfslinks);
+                free(bfslinks);
                 free(mainseeds);
             }
         } else if (opts->taxo == 1 || opts->taxo == 2) {
@@ -389,14 +389,14 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     filter_depth = opts->depth;
                 }
 
-                DFSlinks* dfslinks = NULL;
-                int num_DFSlinks = 0;
-                DFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &dfslinks, &num_DFSlinks);
+                BFSlinks* bfslinks = NULL;
+                int num_BFSlinks = 0;
+                BFSseeds("mt", num_links, num_ctg, ctglinks, ctgdepth, &num_dynseeds, &dynseeds, seq_depth, filter_depth, &bfslinks, &num_BFSlinks);
                 int mt_mainseeds_num = 0;
-                int* mainseeds = (int*) malloc(sizeof(int) * num_DFSlinks);
-                optgfa(num_dynseeds, &dynseeds, &dfslinks, &num_DFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
+                int* mainseeds = (int*) malloc(sizeof(int) * num_BFSlinks);
+                optgfa(num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, 0, NULL, 0, filter_depth, opts->cutseq);
                 
-                free(dfslinks);
+                free(bfslinks);
                 free(mainseeds);
             }
         }

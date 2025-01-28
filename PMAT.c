@@ -31,6 +31,7 @@ SOFTWARE.
 #include <unistd.h>
 #include <getopt.h>
 #include <libgen.h> // dirname
+#include <signal.h>
 
 
 #include "log.h"
@@ -85,7 +86,7 @@ void autoMito_usage() {
     fprintf(stdout,
         "Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [-r RUNASSEMBLY] [options]\n"
         "Example:\n"
-        "       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -r runAssembly.sif -t hifi -m -T 8\n"
+        "       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -t hifi -m -T 8\n"
         "       PMAT autoMito -i ont.fastq.gz -o ont_assembly -t ont -S nextdenovo -C canu -N nextdenovo\n"
         "       PMAT autoMito -i clr.fastq.gz -o clr_assembly -t clr -S canu -C canu\n\n"
         
@@ -100,7 +101,7 @@ void autoMito_usage() {
         "   -k, --kmer           kmer size for estimating genome size (default: 31)\n"
         "   -g, --genomesize     Genome size (g/m/k), skip genome size estimation if set\n"
         "   -p, --task           Task type (0/1), skip error correction for ONT/CLR by selecting 0, otherwise 1 (default: 1)\n"
-        // "   -G, --organelles     Genome organelles (mt: mitochondria/pt: plastid/all, default: mt)\n"
+        "   -G, --organelles     Genome organelles (mt/pt/all, default: mt)\n"
         "   -x, --taxo           Specify the organism type (0/1/2), 0: plants, 1: animals, 2: Fungi (default: 0)\n"
         "   -S, --correctsoft    Error correction software (canu/nextdenovo, default: nextdenovo)\n"
         "   -C, --canu           Canu path\n"
@@ -156,7 +157,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         {"genomesize", 1, 0, 'g'},
         {"task", 1, 0, 'p'},
         {"taxo", 1, 0, 'x'},
-        // {"organelles", 1, 0, 'G'},
+        {"organelles", 1, 0, 'G'},
         {"correctsoft", 1, 0, 'S'},
         {"canu", 1, 0, 'C'},
         {"nextdenovo", 1, 0, 'N'},
@@ -174,7 +175,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
     };
 
     while (1) {
-        int c = getopt_long(argc, argv, ":i:o:t:k:g:p:x:S:C:N:n:F:D:K:I:L:T:mhv", long_options, &option_index);
+        int c = getopt_long(argc, argv, ":i:o:t:k:g:p:G:x:S:C:N:n:F:D:K:I:L:T:mhv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -191,7 +192,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
                 opts->genomesize = optarg;
                 break;
             case 'p': opts->task = atoi(optarg); break;
-            // case 'G': *organelles = optarg; break;
+            case 'G': opts->organelles = optarg; break;
             case 'x': opts->taxo = atoi(optarg); break;
             case 'S': opts->correct_software = optarg; break;
             case 'C': opts->canu_path = optarg; break;
@@ -310,6 +311,20 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
             free(cfg_path);
             free(dir);
         }
+    }
+
+    if (opts->organelles != NULL) {
+        if (strcmp(opts->organelles, "mt") != 0 && strcmp(opts->organelles, "pt") != 0) {
+            log_message(ERROR, "Invalid organelles type (mt/pt)");
+            exit(EXIT_FAILURE);
+        }
+        // if taxo is not plant, organelles should not be pt
+        if (opts->taxo != 0 && strcmp(opts->organelles, "pt") == 0) {
+            log_message(ERROR, "Invalid organelles type: %s for taxo type: %d", opts->organelles, opts->taxo);
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        opts->organelles = strdup("mt");
     }
 
     if (which_executable("blastn") == 0) {
@@ -479,6 +494,7 @@ int main(int argc, char *argv[]) {
             autoMitoArgs optauto = {0};
             optauto.genomesize = NULL;
             optauto.runassembly = NULL;
+            optauto.organelles = NULL;
             optauto.task = 1;
             optauto.taxo = 0;
             optauto.cfg_flag = 0;

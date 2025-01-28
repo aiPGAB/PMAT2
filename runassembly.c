@@ -96,7 +96,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
             exit(EXIT_FAILURE);
         }
 
-        size_t cmd_len = snprintf(NULL, 0, "apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
+        size_t cmd_len = snprintf(NULL, 0, "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
             sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
 
@@ -109,7 +109,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -ml %d -o %s %s\n\n",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
-                    "apptainer exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                    "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
         } else {
             log_info("Running command:\n"
@@ -119,7 +119,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -ml %d -o %s %s\n\n",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
-                    "apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                    "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
         }
 
@@ -129,7 +129,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
             exit(EXIT_FAILURE);
         }
 
-        size_t cmd_len = snprintf(NULL, 0, "singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
+        size_t cmd_len = snprintf(NULL, 0, "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
             sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
         if (mem) {
@@ -141,7 +141,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -ml %d -o %s %s\n\n",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
-                    "singularity exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                    "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
         } else {
             log_info("Running command:\n"
@@ -151,7 +151,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -ml %d -o %s %s\n\n",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
-                    "singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                    "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                     sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
         }
     } else {

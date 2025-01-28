@@ -2,13 +2,13 @@ CC := gcc
 CFLAGS := -g -O3 -Wall -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-result
 LIBS := -lm -lz -lpthread
 
-SOURCES := PMAT.c log.c misc.c autoMito.c graphBuild.c hitseeds.c DFSseed.c \
+SOURCES := PMAT.c log.c misc.c autoMito.c graphBuild.c hitseeds.c BFSseed.c \
            graphtools.c break_long_reads.c fastq2fa.c runassembly.c path2fa.c\
            get_subsample.c correct_sequences.c yak-count.c kthread.c \
 		   graphPath.c
 TARGET := PMAT
 
-EXCLUDE_MAINS := -DHITSEEDS_MAIN -DDFSSEED_MAIN -DSUBSAMPLE_MAIN -DFQ2FA_MAIN -DRUNASSEMBLY_MAIN -DYAK_MAIN
+EXCLUDE_MAINS := -DHITSEEDS_MAIN -DBFSSEED_MAIN -DSUBSAMPLE_MAIN -DFQ2FA_MAIN -DRUNASSEMBLY_MAIN -DYAK_MAIN
 
 
 .PHONY: all clean

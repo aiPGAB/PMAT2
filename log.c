@@ -28,7 +28,7 @@ SOFTWARE.
 #include <time.h>
 #include "log.h"
 
-#define MAX_LOG_MESSAGE_LENGTH 1024
+#define MAX_LOG_MESSAGE_LENGTH 4096
 
 FILE* log_output_stream = NULL;
 
@@ -53,8 +53,12 @@ void log_section_tail(const char* message) {
 void log_info(const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vprintf(format, args);
+    if (log_output_stream == NULL) {
+        log_output_stream = stdout;
+    }
+    vfprintf(log_output_stream, format, args);
     va_end(args);
+    fflush(log_output_stream);
 }
 
 void log_message(int level, const char *fmt, ...) {

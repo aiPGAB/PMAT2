@@ -38,6 +38,7 @@ SOFTWARE.
 #include <sys/stat.h> // mkdir
 #include <dirent.h> // opendir, readdir, closedir, rewinddir, struct dirent
 #include <time.h>
+#include <signal.h>
 
 
 #include "log.h"
@@ -456,6 +457,8 @@ void execute_command(const char* command, int verbose, int log_output) {
         dup2(pipefd[1], STDERR_FILENO);
         close(pipefd[1]);
 
+        signal(SIGHUP, SIG_IGN);
+
         execl("/bin/sh", "sh", "-c", command, (char *)NULL);
         log_message(ERROR, "Failed to execute command: %s", strerror(errno));
         exit(EXIT_FAILURE);
@@ -527,110 +530,64 @@ void execute_command(const char* command, int verbose, int log_output) {
     }
 }
 
-int ass_command(const char* command, int verbose, int log_output) {
+
+int ass_command(const char *command, int verbose, int log_output) {
     if (verbose) {
         log_info("Running command: %s\n", command);
     }
-    uint64_t i;
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        log_message(ERROR, "Failed to create pipe: %s", strerror(errno));
+
+    FILE *fp = popen(command, "r");
+    if (fp == NULL) {
+        log_message(ERROR, "Failed to open pipe: %s", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        log_message(ERROR, "Failed to fork: %s", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        buffer[strcspn(buffer, "\n")] = '\0';
 
-    if (pid == 0) {  // Child process
-        close(pipefd[0]);  // Close unused read end
-        dup2(pipefd[1], STDOUT_FILENO);
-        dup2(pipefd[1], STDERR_FILENO);
-        close(pipefd[1]);
-
-        execl("/bin/sh", "sh", "-c", command, (char *)NULL);
-        log_message(ERROR, "Failed to execute command: %s", strerror(errno));
-        exit(EXIT_FAILURE);
-    } else {  // Parent process
-        close(pipefd[1]);  // Close unused write end
-
-        // Set the pipe to non-blocking mode
-        int flags = fcntl(pipefd[0], F_GETFL, 0);
-        fcntl(pipefd[0], F_SETFL, flags | O_NONBLOCK);
-
-        char buffer[4096];
-        ssize_t bytes_read;
-        char line_buffer[4096] = {0};
-        size_t line_buffer_pos = 0;
-
-        while (1) {
-            bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
-            if (bytes_read > 0) {
-                buffer[bytes_read] = '\0';
-                for (i = 0; i < bytes_read; i++) {
-                    if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
-                        line_buffer[line_buffer_pos] = '\0';
-
-                        // Check for the specific assertion message
-
-                        if (strstr(line_buffer, "v3.0 (20140410_1040)") == NULL &&
-                            strstr(line_buffer, "Warning:  No quality scores file found.") == NULL) {
-                            if (strstr(line_buffer, "chord->getLength()") != NULL) {
-                                return -2;
-                            }
-                            if (strstr(line_buffer, "doAsmAlignment traceback") != NULL) {
-                                log_message(ERROR, "Command did not exit normally");
-                                return -1;
-                            }
-                            // Remove CR characters
-                            char* cr = strchr(line_buffer, '\r');
-                            while (cr != NULL) {
-                                memmove(cr, cr + 1, strlen(cr + 1) + 1);
-                                cr = strchr(cr, '\r');
-                            }
-
-                            if (log_output == 0 && strstr(line_buffer, "Indexing PMAT_cut_seq.fa...") != NULL) {
-                                log_output = 1;
-                            }
-
-                            if (log_output) {
-                                log_info("%s\n", line_buffer);
-                            }
-                            fflush(stdout);  // Force output to be written immediately
-                        }
-                        line_buffer_pos = 0;
-                    } else {
-                        line_buffer[line_buffer_pos++] = buffer[i];
-                    }
-                }
-            } else if (bytes_read == 0) {
-                // End of file reached
-                break;
-            } else {
-                // No data available, sleep for a short time
-                sleep_ms(10);  // Sleep for 10ms
-            }
+        if (strstr(buffer, "v3.0 (20140410_1040)") != NULL ||
+            strstr(buffer, "Warning:  No quality scores file found.") != NULL) {
+            continue;
         }
 
-        close(pipefd[0]);
+        if (strstr(buffer, "chord->getLength()") != NULL) {
+            pclose(fp);
+            return -2;
+        }
 
-        int status;
-        waitpid(pid, &status, 0);
-        if (WIFEXITED(status)) {
-            int exit_status = WEXITSTATUS(status);
-            if (exit_status != 0) {
-                log_message(ERROR, "Command failed with status: %d", exit_status);
-                return exit_status;
-            }
-        } else {
+        if (strstr(buffer, "doAsmAlignment traceback") != NULL) {
             log_message(ERROR, "Command did not exit normally");
+            pclose(fp);
             return -1;
         }
+
+        if (log_output == 0 && strstr(buffer, "Indexing PMAT_cut_seq.fa...") != NULL) {
+            log_output = 1;
+        }
+
+        if (log_output) {
+            log_info("%s\n", buffer);
+        }
+        fflush(stdout);
     }
+
+    int status = pclose(fp);
+    if (WIFEXITED(status)) {
+        int exit_status = WEXITSTATUS(status);
+        if (exit_status != 0) {
+            log_message(ERROR, "Command failed with status: %d", exit_status);
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        log_message(ERROR, "Command did not exit normally");
+        exit(EXIT_FAILURE);
+    }
+
     return 0;
 }
+
+
 
 /* validate a FASTA file */
 int validate_fasta_file(const char* filename) {

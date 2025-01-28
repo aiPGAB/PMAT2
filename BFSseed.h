@@ -23,9 +23,50 @@ SOFTWARE.
 
 */
 
-#ifndef VERSION_H
-#define VERSION_H
 
-#define VERSION_PMAT "2.0.5"
+#ifndef BFSSEED_H
+#define BFSSEED_H
 
-#endif // VERSION_H
+#include "hitseeds.h"
+
+typedef struct {
+    int lctg;
+    int rctg;
+    char *lutr;
+    char *rutr;
+    float linkdepth;
+} Ctglinks;
+
+
+// typedef struct {
+//     char *lctg;
+//     int lctgsmp;
+//     float lctgdepth;
+//     int lctglen;
+//     char *rctg;
+//     int rctgsmp;
+//     float rctgdepth;
+//     int rctglen;
+//     char *lutr;
+//     char *rutr;
+//     float linkdepth;
+// } BFSlinks;
+typedef struct {
+    int lctgsmp;
+    float lctgdepth;
+    int lctglen;
+    int rctgsmp;
+    float rctgdepth;
+    int rctglen;
+    int lutrsmp;
+    int rutrsmp;
+    float linkdepth;
+} BFSlinks;
+
+void BFSseeds(const char* type, int num_links, int num_ctg, 
+            Ctglinks* ctglinks, CtgDepth* ctgdepth, 
+            int* num_dynseeds, int** dynseeds, float nucl_depth, 
+            float filter_depth, BFSlinks** bfslinks, int* num_bfslinks);
+
+
+#endif

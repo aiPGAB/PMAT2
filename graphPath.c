@@ -31,7 +31,7 @@ SOFTWARE.
 #include <pthread.h>
 
 #include "khash.h"
-#include "DFSseed.h"
+#include "BFSseed.h"
 #include "hitseeds.h"
 #include "graphtools.h"
 #include "misc.h"
@@ -86,7 +86,7 @@ typedef struct {
     int node2;
     int utr2;
     int main_num;
-    DFSlinks* mainlinks;
+    BFSlinks* mainlinks;
     CtgDepth* ctg_depth;
     nodePath* current_path;
     pathScore* path_score;
@@ -98,10 +98,10 @@ typedef struct {
     khash_t(node_num) *h_chloro;
     khash_t(Ha_nodelink) *h_links;
     int stop_flag;
-} dfs_m_args;
+} bfs_m_args;
 
 
-void copy_DFSlinks(DFSlinks* dest, const DFSlinks* src) {
+void copy_BFSlinks(BFSlinks* dest, const BFSlinks* src) {
     dest->lctgsmp = src->lctgsmp;
     dest->lctgdepth = src->lctgdepth;
     dest->lctglen = src->lctglen;
@@ -118,7 +118,7 @@ void copy_DFSlinks(DFSlinks* dest, const DFSlinks* src) {
     // dest->rutr = src->rutr ? strdup(src->rutr) : NULL;
 }
 
-// void free_DFSlinks(DFSlinks *links, int num_links) {
+// void free_BFSlinks(BFSlinks *links, int num_links) {
 //     for (int i = 0; i < num_links; i++) {
 //         if (links[i].lctg) free(links[i].lctg);
 //         if (links[i].rctg) free(links[i].rctg);
@@ -128,7 +128,7 @@ void copy_DFSlinks(DFSlinks* dest, const DFSlinks* src) {
 //     free(links);
 // }
 
-static void node_recursive(int node, bool* link_used, int* visited_nodes, int* visited_num, int link_num, DFSlinks* links, DFSlinks* tempDFSlinks, int* temp_link_num, int* temp_node, int* temp_node_num) {
+static void node_recursive(int node, bool* link_used, int* visited_nodes, int* visited_num, int link_num, BFSlinks* links, BFSlinks* tempBFSlinks, int* temp_link_num, int* temp_node, int* temp_node_num) {
     visited_nodes[*visited_num] = node;
     (*visited_num)++;
 
@@ -137,7 +137,7 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
         if (link_used[i]) continue;
 
         if (links[i].lctgsmp == node) {
-            copy_DFSlinks(&tempDFSlinks[*temp_link_num], &links[i]);
+            copy_BFSlinks(&tempBFSlinks[*temp_link_num], &links[i]);
             (*temp_link_num)++;
             link_used[i] = true;
 
@@ -145,9 +145,9 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
                 temp_node[*temp_node_num] = links[i].rctgsmp;
                 (*temp_node_num)++;
             }
-            node_recursive(links[i].rctgsmp, link_used, visited_nodes, visited_num, link_num, links, tempDFSlinks, temp_link_num, temp_node, temp_node_num);
+            node_recursive(links[i].rctgsmp, link_used, visited_nodes, visited_num, link_num, links, tempBFSlinks, temp_link_num, temp_node, temp_node_num);
         } else if (links[i].rctgsmp == node) {
-            copy_DFSlinks(&tempDFSlinks[*temp_link_num], &links[i]);
+            copy_BFSlinks(&tempBFSlinks[*temp_link_num], &links[i]);
             (*temp_link_num)++;
             link_used[i] = true;
 
@@ -155,12 +155,12 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
                 temp_node[*temp_node_num] = links[i].lctgsmp;
                 (*temp_node_num)++;
             }
-            node_recursive(links[i].lctgsmp, link_used, visited_nodes, visited_num, link_num, links, tempDFSlinks, temp_link_num, temp_node, temp_node_num);
+            node_recursive(links[i].lctgsmp, link_used, visited_nodes, visited_num, link_num, links, tempBFSlinks, temp_link_num, temp_node, temp_node_num);
         }
     }
 }
 
-uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures) {
+uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures) {
     int* visited_nodes = (int*)malloc(2 * link_num * sizeof(int));
     bool* link_used = (bool*)malloc(link_num * sizeof(bool));
     memset(link_used, 0, link_num * sizeof(bool));
@@ -175,7 +175,7 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
         int node = node_arry[i];
 
         if (findint(visited_nodes, visited_num, node) == 0) {
-            DFSlinks* tempDFSlinks = (DFSlinks*)malloc(link_num * sizeof(DFSlinks));
+            BFSlinks* tempBFSlinks = (BFSlinks*)malloc(link_num * sizeof(BFSlinks));
             int temp_link_num = 0;
             int* temp_node = (int*)malloc(node_num * sizeof(int));
             int temp_node_num = 1;
@@ -185,13 +185,13 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
             structure_num++;
 
             if (ret) {
-                node_recursive(node, link_used, visited_nodes, &visited_num, link_num, links, tempDFSlinks, &temp_link_num, temp_node, &temp_node_num);
-                DFSstructure *structure = (DFSstructure*)malloc(sizeof(DFSstructure));
+                node_recursive(node, link_used, visited_nodes, &visited_num, link_num, links, tempBFSlinks, &temp_link_num, temp_node, &temp_node_num);
+                BFSstructure *structure = (BFSstructure*)malloc(sizeof(BFSstructure));
                 structure->num_links = temp_link_num;
-                structure->links = (DFSlinks*)malloc(temp_link_num * sizeof(DFSlinks));
+                structure->links = (BFSlinks*)malloc(temp_link_num * sizeof(BFSlinks));
 
                 for (j = 0; j < temp_link_num; j++) {
-                    copy_DFSlinks(&structure->links[j], &tempDFSlinks[j]);
+                    copy_BFSlinks(&structure->links[j], &tempBFSlinks[j]);
                 }
                 structure->num_nodes = temp_node_num;
                 structure->node = (int*)malloc(temp_node_num * sizeof(int));
@@ -199,9 +199,9 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
                     structure->node[j] = temp_node[j];
                 }
                 kh_value(h_structures, k) = structure;
-                free(tempDFSlinks);
+                free(tempBFSlinks);
             } else {
-                free(tempDFSlinks);
+                free(tempBFSlinks);
             }
         }
     }
@@ -211,7 +211,7 @@ uint32_t dfs_structure(int node_num, int link_num, DFSlinks* links, int* node_ar
     return structure_num;
 }
 
-static void dfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth, nodePath* current_path, nodePath** all_paths, int* path_count) 
+static void bfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth, nodePath* current_path, nodePath** all_paths, int* path_count) 
 {
     
     /* check if the current node is the target node */
@@ -235,7 +235,7 @@ static void dfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main
             current_path->utr[current_path->nodenum - 1] = mainlinks[i].rutrsmp;
             current_path->nodelen += ctg_depth[mainlinks[i].rctgsmp - 1].len;
 
-            dfs_algorithm(mainlinks[i].rctgsmp, mainlinks[i].rutrsmp, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, all_paths, path_count);
+            bfs_algorithm(mainlinks[i].rctgsmp, mainlinks[i].rutrsmp, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, all_paths, path_count);
             
             /* backtrack */
             current_path->nodenum--;
@@ -249,7 +249,7 @@ static void dfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main
             current_path->utr[current_path->nodenum - 1] = mainlinks[i].lutrsmp;
             current_path->nodelen += ctg_depth[mainlinks[i].lctgsmp - 1].len;
 
-            dfs_algorithm(mainlinks[i].lctgsmp, mainlinks[i].lutrsmp, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, all_paths, path_count);
+            bfs_algorithm(mainlinks[i].lctgsmp, mainlinks[i].lutrsmp, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, all_paths, path_count);
 
             /* backtrack */
             current_path->nodenum--;
@@ -260,7 +260,7 @@ static void dfs_algorithm(int node_s, int s_utr, int node_t, int t_utr, int main
 
 
 
-void findSpath(int node1, int node1utr, int node2, int node2utr, int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth) 
+void findSpath(int node1, int node1utr, int node2, int node2utr, int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth) 
 {
     nodePath* all_paths = NULL;
     int path_count = 0;
@@ -274,7 +274,7 @@ void findSpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     current_path.nodelen = ctg_depth[node1 - 1].len;
     current_path.pathlen = 0;
 
-    dfs_algorithm(node1, node1utr, node2, node2utr, main_num, mainlinks, ctg_depth, &current_path, &all_paths, &path_count);
+    bfs_algorithm(node1, node1utr, node2, node2utr, main_num, mainlinks, ctg_depth, &current_path, &all_paths, &path_count);
 
     nodePath* shortest_path = &all_paths[0];
     uint64_t i;
@@ -403,7 +403,7 @@ static int path_up(pathScore* path_score, nodePath current_path, CtgDepth *ctg_d
     return 0;
 }
 
-static void dfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth, nodePath* current_path, pathScore* path_score,
+static void bfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth, nodePath* current_path, pathScore* path_score,
     int* mt_contigs, int mt_num, khash_t(node_num) *h_mito, int* pt_contigs, int pt_num, khash_t(node_num) *h_chloro, khash_t(Ha_nodelink) *h_links, int* stop_flag) 
 {
     if (*stop_flag) return;
@@ -468,8 +468,8 @@ static void dfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, DF
         if (is_chloro) kh_value(h_chloro, kh_get(node_num, h_chloro, next_node))++;
 
         path_stop = false;
-        /* Recursively call dfs_m */
-        dfs_m(next_node, next_utr, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, path_score, mt_contigs, mt_num, h_mito, pt_contigs, pt_num, h_chloro, h_links, stop_flag);
+        /* Recursively call bfs_m */
+        bfs_m(next_node, next_utr, node_t, t_utr, main_num, mainlinks, ctg_depth, current_path, path_score, mt_contigs, mt_num, h_mito, pt_contigs, pt_num, h_chloro, h_links, stop_flag);
 
         /* Backtrack */
         current_path->type = 1;
@@ -704,19 +704,19 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
     }
 }
 
-void* thread_dfs_m(void* args) {
-    dfs_m_args* dfs_args = (dfs_m_args*)args;
+void* thread_bfs_m(void* args) {
+    bfs_m_args* bfs_args = (bfs_m_args*)args;
 
-    dfs_m(dfs_args->node1, dfs_args->utr1, dfs_args->node2, dfs_args->utr2,
-          dfs_args->main_num, dfs_args->mainlinks, dfs_args->ctg_depth,
-          dfs_args->current_path, dfs_args->path_score,
-          dfs_args->mt_contigs, dfs_args->mt_num, dfs_args->h_mito,
-          dfs_args->pt_contigs, dfs_args->pt_num, dfs_args->h_chloro,
-          dfs_args->h_links, &dfs_args->stop_flag);
+    bfs_m(bfs_args->node1, bfs_args->utr1, bfs_args->node2, bfs_args->utr2,
+          bfs_args->main_num, bfs_args->mainlinks, bfs_args->ctg_depth,
+          bfs_args->current_path, bfs_args->path_score,
+          bfs_args->mt_contigs, bfs_args->mt_num, bfs_args->h_mito,
+          bfs_args->pt_contigs, bfs_args->pt_num, bfs_args->h_chloro,
+          bfs_args->h_links, &bfs_args->stop_flag);
     return NULL;
 }
 
-void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, DFSlinks* mainlinks, CtgDepth *ctg_depth, 
+void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, BFSlinks* mainlinks, CtgDepth *ctg_depth, 
     int* mt_contigs, int mt_num, int* pt_contigs, int pt_num, int* flag_err, float* mt_ratio, int taxo, pathScore* struc_path)
 {
     taxo_index = taxo;
@@ -1026,7 +1026,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     // }
 
     pthread_t threads[path_t];
-    dfs_m_args thread_args[path_t];
+    bfs_m_args thread_args[path_t];
 
     nodePath current_path[path_t];
     
@@ -1067,7 +1067,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
         thread_args[i].h_links = h_links;
         thread_args[i].stop_flag = 0;
 
-        pthread_create(&threads[i], NULL, thread_dfs_m, (void*)&thread_args[i]);
+        pthread_create(&threads[i], NULL, thread_bfs_m, (void*)&thread_args[i]);
 
     }
     for (i = 0; i < path_t; i++) {
@@ -1076,7 +1076,7 @@ void findMpath(int node1, int node1utr, int node2, int node2utr, int main_num, D
     free(bfs_path);
 
     pthread_mutex_destroy(&mutex);
-    // dfs_m(node1, node1utr, node2, node2utr, main_num, mainlinks, ctg_depth, &current_path, &path_score, mt_contigs, mt_num, h_mito, pt_contigs, pt_num, h_chloro, h_links);
+    // bfs_m(node1, node1utr, node2, node2utr, main_num, mainlinks, ctg_depth, &current_path, &path_score, mt_contigs, mt_num, h_mito, pt_contigs, pt_num, h_chloro, h_links);
     
     if (path_score.node_num == 0) {
         *flag_err = 1;
