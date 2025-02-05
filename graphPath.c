@@ -161,8 +161,8 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
 }
 
 uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures) {
-    int* visited_nodes = (int*)malloc(2 * link_num * sizeof(int));
-    bool* link_used = (bool*)malloc(link_num * sizeof(bool));
+    int* visited_nodes = (int*)malloc(2 * (link_num + 1) * sizeof(int));
+    bool* link_used = (bool*)malloc((link_num + 1) * sizeof(bool));
     memset(link_used, 0, link_num * sizeof(bool));
     int visited_num = 0;
     uint32_t structure_num = 0;
@@ -175,7 +175,7 @@ uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_ar
         int node = node_arry[i];
 
         if (findint(visited_nodes, visited_num, node) == 0) {
-            BFSlinks* tempBFSlinks = (BFSlinks*)malloc(link_num * sizeof(BFSlinks));
+            BFSlinks* tempBFSlinks = (BFSlinks*)malloc((link_num + 1) * sizeof(BFSlinks));
             int temp_link_num = 0;
             int* temp_node = (int*)malloc(node_num * sizeof(int));
             int temp_node_num = 1;
@@ -183,12 +183,11 @@ uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_ar
 
             k = kh_put(Ha_structures, h_structures, structure_num, &ret);
             structure_num++;
-
             if (ret) {
                 node_recursive(node, link_used, visited_nodes, &visited_num, link_num, links, tempBFSlinks, &temp_link_num, temp_node, &temp_node_num);
                 BFSstructure *structure = (BFSstructure*)malloc(sizeof(BFSstructure));
                 structure->num_links = temp_link_num;
-                structure->links = (BFSlinks*)malloc(temp_link_num * sizeof(BFSlinks));
+                structure->links = (BFSlinks*)malloc((temp_link_num + 1) * sizeof(BFSlinks));
 
                 for (j = 0; j < temp_link_num; j++) {
                     copy_BFSlinks(&structure->links[j], &tempBFSlinks[j]);
@@ -199,13 +198,10 @@ uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_ar
                     structure->node[j] = temp_node[j];
                 }
                 kh_value(h_structures, k) = structure;
-                free(tempBFSlinks);
-            } else {
-                free(tempBFSlinks);
             }
+            free(tempBFSlinks);
         }
     }
-
     free(visited_nodes);
     free(link_used);
     return structure_num;

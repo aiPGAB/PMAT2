@@ -65,7 +65,7 @@ typedef struct {
 void addseq(const char* allgraph, const char* all_fna, CtgDepth* ctgdepth);
 
 /* raw gfa && main gfa */
-void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfslinks, 
+void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfslinks, 
             CtgDepth* ctgdepth, const char* output, const char* all_fna, const char* allgraph, 
             const char* organelles_type, int* mainseeds_num, int** mainseeds, int interfering_ctg_num, 
             int* interfering_ctg, int taxo, float filter_depth, char* cutseq);

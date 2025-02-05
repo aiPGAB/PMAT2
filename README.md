@@ -45,9 +45,9 @@ make
 ```
 Install by downloading the source codes
 ```sh
-wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.0.5.tar.gz
-tar -zxvf PMAT2-2.0.5.tar.gz
-cd PMAT2-2.0.5
+wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.1.0.tar.gz
+tar -zxvf PMAT2-2.1.0.tar.gz
+cd PMAT2-2.1.0
 make
 ./PMAT --help
 ```
@@ -65,7 +65,7 @@ make
     
 Run `PMAT autoMito --help` to view the usage guide.
 
-```
+```plaintext
 Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [options]
 Example:
        PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -t hifi -m -T 8
@@ -81,6 +81,7 @@ Optional options:
    -k, --kmer           kmer size for estimating genome size (default: 31)
    -g, --genomesize     Genome size (g/m/k), skip genome size estimation if set
    -p, --task           Task type (0/1), skip error correction for ONT/CLR by selecting 0, otherwise 1 (default: 1)
+   -G, --organelles     Genome organelles (mt/pt/all, default: mt)
    -x, --taxo           Specify the organism type (0/1), 0: plants, 1: animals (default: 0)
    -S, --correctsoft    Error correction software (canu/nextdenovo, default: nextdenovo)
    -C, --canu           Canu path
@@ -111,7 +112,7 @@ If PMAT fails to generate the assembly graph in 'autoMito' mode, you can use thi
 
 Run `PMAT graphBuild --help` to view the usage guide.
 
-```
+```plaintext
 Usage: PMAT graphBuild [-i SUBSAMPLE] [-a ASSEMBLY] [-o OUTPUT] [options]
 Example:
        PMAT graphBuild -i assembly_test1/subsample -a assembly_test1/assembly_result -o graphBuild_result -s 1 312 356 -T 8
@@ -140,35 +141,86 @@ Optional options:
 
 **<a name="C6.1">Demo1</a>**
 
-1. Download a simulated Arabidopsis thaliana HiFi dataset:
+1. [Arabidopsis thaliana dataset (550Mb)](https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Arabidopsis_thaliana_550Mb.fa.gz):
 ```sh
+## download the dataset
 wget https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Arabidopsis_thaliana_550Mb.fa.gz
-```
-2. then run the autoMito command for one-click assembly:
-```sh
+
+## run autoMito command
 PMAT autoMito -i Arabidopsis_thaliana_550Mb.fa.gz -o ./test1 -t hifi -m
-```
-3. then use the graphBuild command to manually select seeds for assembly (used when the autoMito command fails to get a GFA file automatically):
-```sh
-# Based on the PMATContigGraph.txt file, manually select 3 or more contigs that match the depth of mitochondrial genome sequencing
-PMAT graphBuild -i ./test1/subsample/ -a ./test1/assembly_result/ -o ./test1_gfa -s 1 2 3
+
+## run graphBuild command (when autoMito fails)
+PMAT graphBuild -i ./test1/subsample/ -a ./test1/assembly_result/ -o ./test1_gfa -s 1 2 3 -d 5
 ```
 
+The `PMAT_orgAss.txt` file contains the following information:
+```plaintext
+ ==========================================================
+             Mitochondrial Assembly Assessment             
+ ==========================================================
 
-**<a name="C6.3">Demo2</a>**
+ Basic Statistics:
+ ----------------------------------------------------------
+ Total contigs:          16  
+ Total length:           367.8 kb
+ Average depth:          28.4 x
+ Total genes found:      24/24 (100.0%)
+ Duplicated contigs:     3   
 
-1. Download a simulated Malus domestica HiFi dataset:
+ Per-contig Details:
+ ----------------------------------------------------------
+ Contig ID   Genes     Gene List           
+ ----------------------------------------------------------
+ 300         4         atp1,cox1,nad1,nad2 
+ 2150        1         atp6                
+ 908         4         atp9,ccmB,cox2,nad9 
+ 1221        2         atp4,nad4L          
+ 729         4         ccmC,ccmFn,cox3,nad3
+ 727         1         nad3                
+ 1524        1         atp9                
+ 2150        1         atp6                
+ 749         6         atp8,matR,mttB,na...
+ 298         3         ccmFc,cob,nad6      
+ ----------------------------------------------------------
+```
+
+
+
+**<a name="C6.2">Demo2</a>**
+
+1. [Malus domestica dataset (540Mb)](https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Malus_domestica.540Mb.fasta.gz):
 ```sh
+## download the dataset
 wget https://github.com/bichangwei/PMAT/releases/download/v1.1.0/Malus_domestica.540Mb.fasta.gz
+
+## run autoMito command
+PMAT autoMito -i Malus_domestica.540Mb.fasta.gz -o ./test2 -t hifi -m
+
+## run graphBuild command (when autoMito fails)
+PMAT graphBuild -i ./test2/subsample/ -a ./test2/assembly_result/ -o ./test2_gfa -s 10 20 30 -d 5
 ```
-2. then run the autoMito command for one-click assembly:
-```sh
-PMAT autoMito -i Malus_domestica.540Mb.fasta.gz -o ./test3 -t hifi -m
-```
-3. then use the graphBuild command to manually select seeds for assembly (used when the autoMito command fails to get gfa automatically):
-```sh
-# Based on the PMATContigGraph.txt file, manually select 3 or more contigs that match the depth of mitochondrial genome sequencing
-PMAT graphBuild -i ./test3/subsample/ -a ./test3/assembly_result/ -o ./test3_gfa -s 10 20 30
+
+The `PMAT_orgAss.txt` file contains the following information:
+```plaintext
+ ==========================================================
+             Mitochondrial Assembly Assessment             
+ ==========================================================
+
+ Basic Statistics:
+ ----------------------------------------------------------
+ Total contigs:          4   
+ Total length:           397.0 kb
+ Average depth:          31.1 x
+ Total genes found:      24/24 (100.0%)
+ Duplicated contigs:     1   
+
+ Per-contig Details:
+ ----------------------------------------------------------
+ Contig ID   Genes     Gene List           
+ ----------------------------------------------------------
+ 1           20        atp1,atp4,atp8,at...
+ 2           6         atp6,atp9,matR,na...
+ ----------------------------------------------------------
 ```
 
 
@@ -218,8 +270,12 @@ output_dir/
 │   ├── PMAT_pt_raw.gfa          # Initial chloroplast graph
 │   ├── PMAT_pt_main.gfa         # Optimized chloroplast graph
 │   └── PMAT_pt_main.fa          # Final chloroplast assembly
-└── gkmer_result/
-    └── gkmer                    # Kmer statistics
+├── gkmer_result/
+|   ├── gkmer_histo.txt          # Kmer frequency
+|   └── summary.txt              # genome size estimation
+├── subsample/
+│   └── PMAT_cut_seq.fa          # Subsampled reads for assembly
+└── PMAT_orgAss.txt              # Organellar assembly assessment/
 ```
 
 ## <a name="C8">Version</a>
@@ -231,6 +287,11 @@ Updates:
 - Implemented the assembly of animal and plant organellar genomes.
 - Enhanced the genome graph untangling functionality for organellar genomes, enabling resolution of more complex structures.
 - Parallelized key steps in the workflow, significantly improving runtime efficiency.
+
+PMAT version 2.0.1 (25/2/1)</br>
+Updates:
+
+- Added `orgAss` module to evaluate the completeness of the assembly results.
 
 
 ## <a name="C9">Citing PMAT2</a>

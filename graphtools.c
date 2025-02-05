@@ -37,6 +37,7 @@ SOFTWARE.
 #include "log.h"
 #include "BFSseed.h"
 #include "hitseeds.h"
+#include "orgAss.h"
 
 typedef struct {
     int* node;
@@ -272,7 +273,7 @@ static void run_blastn(const char *cutseq, const char *ctgseq, char *blastn_out,
 }
 
 
-void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfslinks, 
+void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfslinks, 
             CtgDepth* ctgdepth, const char* output, const char* all_fna, const char* allgraph, 
             const char* organelles_type, int* mainseeds_num, int** mainseeds, int interfering_ctg_num, 
             int* interfering_ctg, int taxo, float filter_depth, char* cutseq) 
@@ -608,16 +609,17 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
     //     }
     //     fclose(fpmaingfa);
     // }
-
+    int ass_ctg_num = 0;
+    int ass_ctg_mall = 100;
+    int* ass_ctg_arr = (int*) malloc(ass_ctg_mall * sizeof(int));
     int ps_num = 0;
-    pathScore *ps_struct = (pathScore*) malloc(5 * sizeof(pathScore));
+    pathScore *ps_struct = (pathScore*) malloc(100 * sizeof(pathScore));
     khint_t k, ka, kb;
     int rm_flag = 0;
     if (1) {
         /* Capturing all mitochondrial structures */
         khash_t(Ha_structures)* h_structures = kh_init(Ha_structures);
         uint32_t structure_num = bfs_structure(num_dynseeds, *num_bfslinks, *bfslinks, *dynseeds, h_structures);
-        
         int struc = 0;
         int main_seeds = 0;
         uint64_t max_structure_num = 1;
@@ -720,6 +722,13 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
                     //     }
                     // }
                 }
+                
+                /* skip complex structures (node > 500) */
+                if (temp_mainseeds_num > 200) {
+                    struc--;
+                    continue;
+                }
+
                 for (j = 0; j < temp_mainseeds_num; j++) 
                 {
                     if (findint(*mainseeds, *mainseeds_num, temp_mainseeds[j]) == 0) {
@@ -913,17 +922,30 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
                         for (j = 0; j < (struct_path.node_num - 1); j++) {
                             // log_info("%d (%c) -> ", struct_path.path_node[j], (struct_path.path_utr[j] == 3 ? '-' : '+'));
                             log_info("%d -> ", struct_path.path_node[j]);
+                            if (ass_ctg_num > ass_ctg_mall) {
+                                ass_ctg_mall += 100;
+                                ass_ctg_arr = realloc(ass_ctg_arr, ass_ctg_mall * sizeof(int));
+                            }
+
+                            ass_ctg_arr[ass_ctg_num] = struct_path.path_node[j];
+                            ass_ctg_num++;
                         }
                         if (struct_path.type == 0) {
                             log_info("%d\n", struct_path.path_node[struct_path.node_num - 1]);
                         } else {
                             // log_info("%d (%c)\n", struct_path.path_node[struct_path.node_num - 1], (struct_path.path_utr[struct_path.node_num - 1] == 3 ? '-' : '+'));
                             log_info("%d\n", struct_path.path_node[struct_path.node_num - 1]);
+                            if (ass_ctg_num > ass_ctg_mall) {
+                                ass_ctg_mall += 100;
+                                ass_ctg_arr = realloc(ass_ctg_arr, ass_ctg_mall * sizeof(int));
+                            }
+                            ass_ctg_arr[ass_ctg_num] = struct_path.path_node[j];
+                            ass_ctg_num++;
                         }
                         log_info("———————————————————————————————————————\n");
 
                         ps_num++;
-                        if (ps_num > 5) {
+                        if (ps_num > 100) {
                             ps_struct = realloc(ps_struct, (ps_num + 1) * sizeof(pathScore));
                         }
                         ps_struct[ps_num - 1] = struct_path;
@@ -939,6 +961,13 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
                     log_info("\n");
                     log_info("** %d (+)\n", temp_mainseeds[0]);
                     log_info("———————————————————————————————————————\n");
+                    if (ass_ctg_num > ass_ctg_mall) {
+                        ass_ctg_mall += 100;
+                        ass_ctg_arr = realloc(ass_ctg_arr, ass_ctg_mall * sizeof(int));
+                    }
+                    ass_ctg_arr[ass_ctg_num] = temp_mainseeds[0];
+                            ass_ctg_num++;
+
                     pathScore struct_path;
                     struct_path.type = 1;
                     struct_path.path_len = ctgdepth[temp_mainseeds[0] - 1].len;
@@ -948,7 +977,7 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
                     struct_path.path_utr = (int*) malloc(1 * sizeof(int));
                     struct_path.path_utr[0] = 5;
                     ps_num++;
-                    if (ps_num > 5) {
+                    if (ps_num > 100) {
                         ps_struct = realloc(ps_struct, (ps_num + 1) * sizeof(pathScore));
                     }
                     ps_struct[ps_num - 1] = struct_path;
@@ -992,7 +1021,11 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
             }
         }
         log_message(INFO, "Main seeds (%s): %d", organelles_type, numseeds);
-
+    
+        /* Assign sequences to main seeds for mt */
+        if (strcmp(organelles_type, "mt") == 0) {
+            orgAss(exe_path, all_fna, ctgdepth ,output, ass_ctg_arr, ass_ctg_num, "mt", taxo);
+        }
         /* main graph */
         FILE* fpmaingfa = fopen(maingfa, "w");
         if (fpmaingfa == NULL) {
@@ -1022,7 +1055,6 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
                 }
             }
         }
-
         for (i = 0; i < main_num; i++) {
             if (rm_flag == 1 && findint(interfering_ctg, interfering_ctg_num, mainlinks[i].lctgsmp) == 1 && findint(interfering_ctg, interfering_ctg_num, mainlinks[i].rctgsmp) == 1) continue;
             fprintf(fpmaingfa, "L\t%d\t", mainlinks[i].lctgsmp);
@@ -1044,13 +1076,11 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
     } else {
         log_message(WARNING, "No main seeds found.");
     }
-    
     /* path to fasta */
     size_t pathfa_out_len = strlen(gfa_output) + strlen("/PMAT_ty.fa") + 1;
     char pathfa[pathfa_out_len];
     snprintf(pathfa, pathfa_out_len, "%s/PMAT_%s.fa", gfa_output, organelles_type);
     path2fa(ps_struct, ps_num, h_nodeseq, pathfa);
-
     /* free memory */
     // for (int i = 0; i < main_num; i++) {
     //     free(mainlinks[i].lutr);
@@ -1063,19 +1093,14 @@ void optgfa(int num_dynseeds, int** dynseeds, BFSlinks** bfslinks, int* num_bfsl
         free(ps_struct[i].path_utr);
     }
     free(ps_struct);
-
     for (k = kh_begin(h_nodeseq); k != kh_end(h_nodeseq); ++k) {
         if (kh_exist(h_nodeseq, k)) {
             free(kh_value(h_nodeseq, k));
         }
     }
     kh_destroy(Ha_nodeseq, h_nodeseq);
-    
     free(mainlinks);
     // free(mainseeds);
     free(gfa_output);
-    for (i = 0; i < num_dynseeds; i++) {
-        free(fnainfos[i].seq);
-    }
     free(fnainfos);
 }

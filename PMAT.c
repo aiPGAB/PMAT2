@@ -135,7 +135,7 @@ void graphBuild_usage() {
         "\n"
 
         "Optional options:\n"
-        "   -G, --organelles    Genome organelles (mt: mitochondria/pt: plastid, default: mt)\n"
+        "   -G, --organelles    Genome organelles (mt/pt, default: mt)\n"
         "   -x, --taxo          Specify the organism type (0/1), 0: plants, 1: animals, 2: Fungi (default: 0)\n"
         "   -d, --depth         Contig depth threshold\n"
         "   -s, --seeds         ContigID for extending. Multiple contigIDs should be separated by space. For example: 1 312 356\n"

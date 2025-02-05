@@ -23,9 +23,39 @@ SOFTWARE.
 
 */
 
-#ifndef VERSION_H
-#define VERSION_H
+#ifndef ORGASS_H
+#define ORGASS_H
 
-#define VERSION_PMAT "2.1.0"
+#include "khash.h"
+#include "hitseeds.h"
 
-#endif // VERSION_H
+KHASH_MAP_INIT_INT(hash_count, int)
+
+typedef struct {
+    int contig_id;
+    int num_genes;
+    char **gene_list;
+} ContigGeneStats;
+
+typedef struct {
+    int total_contigs;
+    int total_genes;
+    int unique_genes;
+    int duplicate_contigs;
+    int* duplicate_ids;
+    int num_duplicates;
+    ContigGeneStats *contig_stats;
+} AssessResult;
+
+typedef struct {
+    int *contig_array;
+    int arr_size;
+    int repeat_contig;
+} MtStructure;
+
+
+void orgAss(const char* exe_path, const char* all_contigs, CtgDepth *ctg_depth, 
+            const char* output_path, const int* contig_ids, 
+            int num_contigs, const char* organelle_type, int taxo);
+
+#endif // ORGASS_H

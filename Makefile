@@ -5,7 +5,7 @@ LIBS := -lm -lz -lpthread
 SOURCES := PMAT.c log.c misc.c autoMito.c graphBuild.c hitseeds.c BFSseed.c \
            graphtools.c break_long_reads.c fastq2fa.c runassembly.c path2fa.c\
            get_subsample.c correct_sequences.c yak-count.c kthread.c \
-		   graphPath.c
+		   graphPath.c orgAss.c
 TARGET := PMAT
 
 EXCLUDE_MAINS := -DHITSEEDS_MAIN -DBFSSEED_MAIN -DSUBSAMPLE_MAIN -DFQ2FA_MAIN -DRUNASSEMBLY_MAIN -DYAK_MAIN
