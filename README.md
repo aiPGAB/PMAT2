@@ -19,7 +19,6 @@
 If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
 
 
-<p  align="center"><img src="https://github.com/user-attachments/assets/b0b8b762-99fd-434d-b3a0-5b6b6e12a658" style="width: 60%; height: auto;">
 
 
 - [PMAT2](#h1)
