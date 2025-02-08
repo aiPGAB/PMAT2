@@ -19,6 +19,9 @@
 If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
 
 
+<p  align="center"><img src="https://github.com/user-attachments/assets/b0b8b762-99fd-434d-b3a0-5b6b6e12a658" style="width: 60%; height: auto;">
+
+
 - [PMAT2](#h1)
 - [Installation](#C1)
 - [Repuirement](#C2)
@@ -54,7 +57,7 @@ make
 
 ## <a name="C2">Requirement</a>
 
-- [**BLASTn > 2.2.29**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)  Needs to be installed in `PATH`.
+- [**BLASTn > 2.10.0**](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download)  Needs to be installed in `PATH`.
 - [**Singularity**](https://github.com/YanshuQu/runAssembly) or [**Apptainer**](https://github.com/apptainer/apptainer/blob/main/INSTALL.md) is required for PMAT2. You can find installation instructions [here](https://github.com/YanshuQu/runAssembly).
 - [**Canu > v2.0**](https://github.com/marbl/canu) or [**NextDenovo**](https://github.com/Nextomics/NextDenovo) is required for CLR or ONT sequencing data.
 - [**zlib**](https://www.zlib.net/) Needs to be installed in `PATH`.

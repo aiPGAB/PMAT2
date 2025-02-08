@@ -95,23 +95,20 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             char* gkmer_histo;
 
             char* dir = dirname(strdup(exe_path));
-            size_t glen = strlen(dir) + strlen("/lib/genomescope.R") + 1;
-            char* genomescope = (char*) malloc(glen);
-            snprintf(genomescope, glen, "%s/lib/genomescope.R", dir);
+            char* genomescope = (char*)malloc(sizeof(*genomescope) * (snprintf(NULL, 0, "%s/lib/genomescope.R", dir) + 1));
+            sprintf(genomescope, "%s/lib/genomescope.R", dir);
             if (which_executable(genomescope) == 0) {
                 log_message(ERROR, "Failed to find genomescope.R in %s/lib", dir);
                 exit(EXIT_FAILURE);
             }
             free(dir); 
 
-            gkmer_dir = (char*) malloc(strlen(opts->output_file) + strlen("/gkmer") + 1);
-            strcpy(gkmer_dir, opts->output_file);
-            strcat(gkmer_dir, "/gkmer");
+            gkmer_dir = (char*)malloc(sizeof(*gkmer_dir) * (snprintf(NULL, 0, "%s/gkmer", opts->output_file) + 1));
+            sprintf(gkmer_dir, "%s/gkmer", opts->output_file);
             mkdirfiles(gkmer_dir);
 
-            gkmer_histo = (char*) malloc(strlen(opts->output_file) + strlen("/gkmer/gkmer_histo.txt") + 1);
-            strcpy(gkmer_histo, opts->output_file);
-            strcat(gkmer_histo, "/gkmer/gkmer_histo.txt");
+            gkmer_histo = (char*)malloc(sizeof(*gkmer_histo) * (snprintf(NULL, 0, "%s/gkmer/gkmer_histo.txt", opts->output_file) + 1));
+            sprintf(gkmer_histo, "%s/gkmer/gkmer_histo.txt", opts->output_file);
 
             yak_copt_t opt;
             yak_copt_init(&opt);
@@ -181,58 +178,45 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
     char* assembly_dir;
     char* gfa_dir;
 
-    subsample_dir = (char*) malloc(strlen(opts->output_file) + strlen("/subsample") + 1);
-    assembly_dir = (char*) malloc(strlen(opts->output_file) + strlen("/assembly_result") + 1);
-    gfa_dir = (char*) malloc(strlen(opts->output_file) + strlen("/gfa_result") + 1);
-
-    strcpy(subsample_dir, opts->output_file);
-    strcat(subsample_dir, "/subsample");
+    size_t len_subsample = snprintf(NULL, 0, "%s/subsample", opts->output_file) + 1;
+    subsample_dir = (char*)malloc(len_subsample);
+    sprintf(subsample_dir, "%s/subsample", opts->output_file);
     mkdirfiles(subsample_dir);
 
-    strcpy(assembly_dir, opts->output_file);
-    strcat(assembly_dir, "/assembly_result");
+    size_t len_assembly = snprintf(NULL, 0, "%s/assembly_result", opts->output_file) + 1;
+    assembly_dir = (char*)malloc(len_assembly);
+    sprintf(assembly_dir, "%s/assembly_result", opts->output_file);
 
-    strcpy(gfa_dir, opts->output_file);
-    strcat(gfa_dir, "/gfa_result");
+    size_t len_gfa = snprintf(NULL, 0, "%s/gfa_result", opts->output_file) + 1;
+    gfa_dir = (char*)malloc(len_gfa);
+    sprintf(gfa_dir, "%s/gfa_result", opts->output_file);
     mkdirfiles(gfa_dir);
 
-
-
-
-    char* high_quality_seq = malloc(strlen(opts->output_file) + strlen("/subsample/PMAT_assembly_seq.fa") + 1);
-    if (high_quality_seq == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-
-    snprintf(high_quality_seq, strlen(opts->output_file) + strlen("/subsample/PMAT_assembly_seq.fa") + 2, 
-        "%s/subsample/PMAT_assembly_seq.fa", opts->output_file);
+    char* high_quality_seq = (char*)malloc(sizeof(*high_quality_seq) * (snprintf(NULL, 0, "%s/subsample/PMAT_assembly_seq.fa", opts->output_file) + 1));
+    sprintf(high_quality_seq, "%s/subsample/PMAT_assembly_seq.fa", opts->output_file);
 
     if (strcmp(opts->seqtype, "hifi") == 0) {
         fq2fa(opts->input_file, high_quality_seq); //*
     } else if (strcmp(opts->seqtype, "ont") == 0 || strcmp(opts->seqtype, "clr") == 0) {
         if (opts->task == 1) {
-            char* correct_seq = malloc(strlen(opts->output_file) + strlen("/correct_out/PMAT.correctedReads.fasta.gz") + 1);
-            if (correct_seq == NULL) {
-                fprintf(stderr, "Memory allocation failed!\n");
-                exit(EXIT_FAILURE);
-            }
+            char* correct_seq = (char*)malloc(sizeof(*correct_seq) * (snprintf(NULL, 0, "%s/correct_out/PMAT.correctedReads.fasta%s", 
+                opts->output_file, (strcmp(opts->correct_software, "canu") == 0 ? ".gz" : "")) + 1));
+            sprintf(correct_seq, "%s/correct_out/PMAT.correctedReads.fasta%s", 
+                opts->output_file, (strcmp(opts->correct_software, "canu") == 0 ? ".gz" : ""));
 
             to_lower(opts->correct_software);
             if (strcmp(opts->correct_software, "canu") == 0) {
                 canu_correct(opts->canu_path, opts->input_file, 
                             genomesize_bp, opts->output_file, 
                             readstype, opts->cpu);
-                snprintf(correct_seq, strlen(opts->output_file) + strlen("/correct_out/PMAT.correctedReads.fasta.gz") + 1, "%s/correct_out/PMAT.correctedReads.fasta.gz", opts->output_file);
-                
             } else if (strcmp(opts->correct_software, "nextdenovo") == 0) {
                 nextdenovo_correct(opts->nextdenovo_path, opts->canu_path, 
                                     opts->input_file, opts->cfg_file, opts->cfg_flag, 
                                     opts->output_file, opts->seqtype, readstype, opts->cpu, genomesize_bp);
-                snprintf(correct_seq, strlen(opts->output_file) + strlen("/correct_out/PMAT.correctedReads.fasta") + 1, "%s/correct_out/PMAT.correctedReads.fasta", opts->output_file);
             }
             checkfile(correct_seq);
             fq2fa(correct_seq, high_quality_seq);
+            free(correct_seq);
 
         } else if (opts->task == 0) {
             fq2fa(opts->input_file, high_quality_seq);
@@ -246,21 +230,11 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
     }
 
     // select subsample
-    char* subsample_seq = malloc(strlen(opts->output_file) + strlen("/subsample/PMAT_subsample_seq.fa") + 1);
-    if (subsample_seq == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(subsample_seq, strlen(opts->output_file) + strlen("/subsample/PMAT_subsample_seq.fa") + 1, 
-        "%s/subsample/PMAT_subsample_seq.fa", opts->output_file);
+    char* subsample_seq = (char*)malloc(sizeof(*subsample_seq) * (snprintf(NULL, 0, "%s/subsample/PMAT_subsample_seq.fa", opts->output_file) + 1));
+    sprintf(subsample_seq, "%s/subsample/PMAT_subsample_seq.fa", opts->output_file);
 
-    char* cut_seq = malloc(strlen(opts->output_file) + strlen("/subsample/PMAT_cut_seq.fa") + 1);
-    if (cut_seq == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(cut_seq, strlen(opts->output_file) + strlen("/subsample/PMAT_cut_seq.fa") + 1, 
-        "%s/subsample/PMAT_cut_seq.fa", opts->output_file);
+    char* cut_seq = (char*)malloc(sizeof(*cut_seq) * (snprintf(NULL, 0, "%s/subsample/PMAT_cut_seq.fa", opts->output_file) + 1));
+    sprintf(cut_seq, "%s/subsample/PMAT_cut_seq.fa", opts->output_file);
 
     if (opts->factor == 1) {
         BreakLongReads(high_quality_seq, cut_seq, opts->breaknum); //*
@@ -284,13 +258,11 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
     }
     run_Assembly(sif_path, opts->cpu, cut_seq, opts->output_file, opts->mi, opts->ml, opts->mem, genomesize_bp); //*
 
-    char* assembly_fna = malloc(strlen(opts->output_file) + strlen("/assembly_result/PMATAllContigs.fna") + 1);
-    char* assembly_graph = malloc(strlen(opts->output_file) + strlen("/assembly_result/PMATContigGraph.txt") + 1);
+    char* assembly_fna = (char*)malloc(sizeof(*assembly_fna) * (snprintf(NULL, 0, "%s/assembly_result/PMATAllContigs.fna", opts->output_file) + 1));
+    sprintf(assembly_fna, "%s/assembly_result/PMATAllContigs.fna", opts->output_file);
 
-    snprintf(assembly_fna, strlen(opts->output_file) + strlen("/assembly_result/PMATAllContigs.fna") + 1, 
-        "%s/assembly_result/PMATAllContigs.fna", opts->output_file);
-    snprintf(assembly_graph, strlen(opts->output_file) + strlen("/assembly_result/PMATContigGraph.txt") + 1, 
-        "%s/assembly_result/PMATContigGraph.txt", opts->output_file);
+    char* assembly_graph = (char*)malloc(sizeof(*assembly_graph) * (snprintf(NULL, 0, "%s/assembly_result/PMATContigGraph.txt", opts->output_file) + 1));
+    sprintf(assembly_graph, "%s/assembly_result/PMATContigGraph.txt", opts->output_file);
 
 
     /* find seeds */
@@ -380,9 +352,8 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         exit(EXIT_FAILURE);
     }
 
-    char* assembly_info = malloc(strlen(opts->output_file) + strlen("/assembly_result/PMATContiginfo.txt") + 1);
-    snprintf(assembly_info, strlen(opts->output_file) + strlen("/assembly_result/PMATContiginfo.txt") + 1, 
-        "%s/assembly_result/PMATContiginfo.txt", opts->output_file);
+    char* assembly_info = (char*)malloc(sizeof(*assembly_info) * (snprintf(NULL, 0, "%s/assembly_result/PMATContiginfo.txt", opts->output_file) + 1));
+    sprintf(assembly_info, "%s/assembly_result/PMATContiginfo.txt", opts->output_file);
 
     FILE *fout = fopen(assembly_info, "w");
     if (!fout) {

@@ -84,7 +84,7 @@ void usage() {
 
 void autoMito_usage() {
     fprintf(stdout,
-        "Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [-r RUNASSEMBLY] [options]\n"
+        "Usage: PMAT autoMito [-i INPUT] [-o OUTPUT] [-t SEQTYPE] [options]\n"
         "Example:\n"
         "       PMAT autoMito -i hifi.fastq.gz -o hifi_assembly -t hifi -m -T 8\n"
         "       PMAT autoMito -i ont.fastq.gz -o ont_assembly -t ont -S nextdenovo -C canu -N nextdenovo\n"

@@ -50,10 +50,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     /* mkdir output directory */
     char* gfa_dir;
     mkdirfiles(opts->output_file);
-    gfa_dir = (char*) malloc(strlen(opts->output_file) + strlen("/gfa_result") + 1);
-
-    strcpy(gfa_dir, opts->output_file);
-    strcat(gfa_dir, "/gfa_result");
+    gfa_dir = (char*) malloc(sizeof(*gfa_dir) * (snprintf(NULL, 0, "%s/gfa_result", opts->output_file) + 1));
+    sprintf(gfa_dir, "%s/gfa_result", opts->output_file);
     mkdirfiles(gfa_dir);
     free(gfa_dir);
 

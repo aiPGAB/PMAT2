@@ -44,23 +44,20 @@ static void cns_files(const char* cns_dir, const char* output_file);
 void canu_correct(const char* canu_path, const char* input_seq, int genomeSize, const char* output_dir, const char* readstype, int cpu) {
     log_message(INFO, "Start canu correction...");
 
-    size_t output_correct_len = snprintf(NULL, 0, "%s/correct_out", output_dir) + 1;
-    char* output_correct = malloc(output_correct_len);
-    snprintf(output_correct, output_correct_len, "%s/correct_out", output_dir);
+    char* output_correct = (char*)malloc(sizeof(*output_correct) * (snprintf(NULL, 0, "%s/correct_out", output_dir) + 1));
+    sprintf(output_correct, "%s/correct_out", output_dir);
 
     mkdirfiles(output_correct);
 
-    size_t canu_cmd_len = snprintf(NULL, 0, "%s -correct -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -%s %s", 
-                                   canu_path, output_correct, genomeSize, cpu, readstype, input_seq) + 1;
-    char* canu_cmd = malloc(canu_cmd_len);
-    snprintf(canu_cmd, canu_cmd_len, "%s -correct -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -%s %s", 
-             canu_path, output_correct, genomeSize, cpu, readstype, input_seq);
+    char* canu_cmd = (char*)malloc(sizeof(*canu_cmd) * (snprintf(NULL, 0, "%s -correct -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -%s %s", 
+                                  canu_path, output_correct, genomeSize, cpu, readstype, input_seq) + 1));
+    sprintf(canu_cmd, "%s -correct -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -%s %s", 
+            canu_path, output_correct, genomeSize, cpu, readstype, input_seq);
 
     execute_command(canu_cmd, 0, 1);
 
-    size_t corrected_reads_path_len = snprintf(NULL, 0, "%s/PMAT.correctedReads.fasta.gz", output_correct) + 1;
-    char* corrected_reads_path = malloc(corrected_reads_path_len);
-    snprintf(corrected_reads_path, corrected_reads_path_len, "%s/PMAT.correctedReads.fasta.gz", output_correct);
+    char* corrected_reads_path = (char*)malloc(sizeof(*corrected_reads_path) * (snprintf(NULL, 0, "%s/PMAT.correctedReads.fasta.gz", output_correct) + 1));
+    sprintf(corrected_reads_path, "%s/PMAT.correctedReads.fasta.gz", output_correct);
 
     if (access(corrected_reads_path, F_OK) != 0) {
         log_message(ERROR, "An error occurred during the correction process?");
@@ -86,19 +83,16 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path, cons
                         const char* cfg, int cfg_flag, const char* output_dir, char* readstype, char* seqtype, int cpu, int genomeSize) {
 
     char* output_abs = realpath(output_dir, NULL);
-    size_t output_correct_len = snprintf(NULL, 0, "%s/correct_out", output_abs) + 1;
-    char* output_correct = malloc(output_correct_len);
-    snprintf(output_correct, output_correct_len, "%s/correct_out", output_abs);
+    char* output_correct = (char*)malloc(sizeof(*output_correct) * (snprintf(NULL, 0, "%s/correct_out", output_abs) + 1));
+    sprintf(output_correct, "%s/correct_out", output_abs);
 
     mkdirfiles(output_correct);
 
-    size_t cfgw_len = snprintf(NULL, 0, "%s/correct_out/run.cfg", output_abs) + 1;
-    char* cfgw = malloc(cfgw_len);
-    snprintf(cfgw, cfgw_len, "%s/correct_out/run.cfg", output_abs);
+    char* cfgw = (char*)malloc(sizeof(*cfgw) * (snprintf(NULL, 0, "%s/correct_out/run.cfg", output_abs) + 1));
+    sprintf(cfgw, "%s/correct_out/run.cfg", output_abs);
 
-    size_t fofn_len = snprintf(NULL, 0, "%s/correct_out/input.fofn", output_abs) + 1;
-    char* fofn = malloc(cfgw_len);
-    snprintf(fofn, fofn_len, "%s/correct_out/input.fofn", output_abs);
+    char* fofn = (char*)malloc(sizeof(*fofn) * (snprintf(NULL, 0, "%s/correct_out/input.fofn", output_abs) + 1));
+    sprintf(fofn, "%s/correct_out/input.fofn", output_abs);
     FILE* fofn_fp = fopen(fofn, "w");
     if (fofn_fp == NULL) {
         log_message(ERROR, "Failed to open fofn file: %s", fofn);
@@ -117,9 +111,8 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path, cons
     
     log_message(INFO, "Start nextdenovo correction...");
 
-    size_t nextdenovo_cmd_len = snprintf(NULL, 0, "%s %s", nextdenovo_path, cfgw) + 1;
-    char* nextdenovo_cmd = malloc(nextdenovo_cmd_len);
-    snprintf(nextdenovo_cmd, nextdenovo_cmd_len, "%s %s", nextdenovo_path, cfgw);
+    char* nextdenovo_cmd = (char*)malloc(sizeof(*nextdenovo_cmd) * (snprintf(NULL, 0, "%s %s", nextdenovo_path, cfgw) + 1));
+    sprintf(nextdenovo_cmd, "%s %s", nextdenovo_path, cfgw);
 
     execute_command(nextdenovo_cmd, 0, 1);
 
@@ -127,13 +120,11 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path, cons
     free(nextdenovo_cmd);
     free(cfgw);
 
-    size_t corrected_reads_path_len = snprintf(NULL, 0, "%s/PMAT.correctedReads.fasta", output_correct) + 1;
-    char* corrected_reads_path = malloc(corrected_reads_path_len);
-    snprintf(corrected_reads_path, corrected_reads_path_len, "%s/PMAT.correctedReads.fasta", output_correct);
+    char* corrected_reads_path = (char*)malloc(sizeof(*corrected_reads_path) * (snprintf(NULL, 0, "%s/PMAT.correctedReads.fasta", output_correct) + 1));
+    sprintf(corrected_reads_path, "%s/PMAT.correctedReads.fasta", output_correct);
 
-    size_t cns_path_len = snprintf(NULL, 0, "%s/02.cns_align/01.seed_cns.sh.work", output_correct) + 1;
-    char* cns_path = malloc(cns_path_len);
-    snprintf(cns_path, cns_path_len, "%s/02.cns_align/01.seed_cns.sh.work", output_correct);
+    char* cns_path = (char*)malloc(sizeof(*cns_path) * (snprintf(NULL, 0, "%s/02.cns_align/01.seed_cns.sh.work", output_correct) + 1));
+    sprintf(cns_path, "%s/02.cns_align/01.seed_cns.sh.work", output_correct);
     checkfile(cns_path);
     
     cns_files(cns_path, corrected_reads_path);
@@ -204,23 +195,20 @@ static void cns_files(const char* cns_dir, const char* output_file) {
 static void canu_trim(const char* canu_path, const char* input_seq, int genomeSize, const char* output_dir, const char* readstype, int cpu) {
     log_message(INFO, "Start canu trimming...");
 
-    size_t output_trim_len = snprintf(NULL, 0, "%s/correct_out/trim_out", output_dir) + 1;
-    char* output_trim = malloc(output_trim_len);
-    snprintf(output_trim, output_trim_len, "%s/correct_out/trim_out", output_dir);
+    char* output_trim = (char*)malloc(sizeof(*output_trim) * (snprintf(NULL, 0, "%s/correct_out/trim_out", output_dir) + 1));
+    sprintf(output_trim, "%s/correct_out/trim_out", output_dir);
 
     mkdirfiles(output_trim);
 
-    size_t canu_cmd_len = snprintf(NULL, 0, "%s -trim -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -corrected -%s %s", 
-                                   canu_path, output_trim, genomeSize, cpu, readstype, input_seq) + 1;
-    char* canu_cmd = malloc(canu_cmd_len);
-    snprintf(canu_cmd, canu_cmd_len, "%s -trim -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -corrected -%s %s", 
-             canu_path, output_trim, genomeSize, cpu, readstype, input_seq);
+    char* canu_cmd = (char*)malloc(sizeof(*canu_cmd) * (snprintf(NULL, 0, "%s -trim -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -corrected -%s %s", 
+                                  canu_path, output_trim, genomeSize, cpu, readstype, input_seq) + 1));
+    sprintf(canu_cmd, "%s -trim -p PMAT -d %s genomeSize=%d useGrid=false maxThreads=%d -corrected -%s %s", 
+            canu_path, output_trim, genomeSize, cpu, readstype, input_seq);
 
     execute_command(canu_cmd, 0, 1);
 
-    size_t trimmed_reads_path_len = snprintf(NULL, 0, "%s/PMAT.trimmedReads.fasta.gz", output_trim) + 1;
-    char* trimmed_reads_path = malloc(trimmed_reads_path_len);
-    snprintf(trimmed_reads_path, trimmed_reads_path_len, "%s/PMAT.trimmedReads.fasta.gz", output_trim);
+    char* trimmed_reads_path = (char*)malloc(sizeof(*trimmed_reads_path) * (snprintf(NULL, 0, "%s/PMAT.trimmedReads.fasta.gz", output_trim) + 1));
+    sprintf(trimmed_reads_path, "%s/PMAT.trimmedReads.fasta.gz", output_trim);
 
     if (access(trimmed_reads_path, F_OK) != 0) {
         log_message(ERROR, "An error occurred during the trim process?");

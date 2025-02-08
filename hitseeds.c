@@ -107,25 +107,17 @@ void HitSeeds(const char* exe_path, const char* organelles_type, const char* all
 
     log_message(INFO, "Finding Mt seeds...");
     char *dir = dirname(strdup(exe_path));
-    size_t dir_len = strlen(dir);
-    uint64_t i;
-    size_t db_path_len = dir_len + strlen(db_suffix) + 1;
-    char db_path[db_path_len];
-    
-    if (strcmp(organelles_type, "mt") == 0) {
-        snprintf(db_path, db_path_len, "%s%s", dir, db_suffix);
-    } else {
-        log_message(ERROR, "Invalid organelles type %s", organelles_type);
-    }
+    char* db_path = (char*)malloc(sizeof(*db_path) * (snprintf(NULL, 0, "%s%s", dir, db_suffix) + 1));
+    sprintf(db_path, "%s%s", dir, db_suffix);
     free(dir);
 
+    uint64_t i;
     khint_t k;
 
     mkdirfiles(output_path);
 
-    size_t blastn_out_len = strlen(output_path) + strlen("/PMAT_mt_blastn.txt") + 1;
-    char blastn_out[blastn_out_len];
-    snprintf(blastn_out, blastn_out_len, "%s/PMAT_mt_blastn.txt", output_path);
+    char* blastn_out = (char*)malloc(sizeof(*blastn_out) * (snprintf(NULL, 0, "%s/PMAT_mt_blastn.txt", output_path) + 1));
+    sprintf(blastn_out, "%s/PMAT_mt_blastn.txt", output_path);
     
     /* Run blastn */
     int num_hits = 0;
@@ -298,24 +290,14 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
 
     log_message(INFO, "Finding Pt seeds...");
     char *dir = dirname(strdup(exe_path));
-    size_t dir_len = strlen(dir);
-    size_t db_path_len = dir_len + strlen("/Conserved_PCGs_db/Plant_conserved_cpgene_nt.fa") + 1;
-    uint64_t i;
-    char db_path[db_path_len];
-    
-    if (strcmp(organelles_type, "pt") == 0) {
-        snprintf(db_path, db_path_len, "%s/Conserved_PCGs_db/Plant_conserved_cpgene_nt.fa", dir);
-    } else  {
-        log_message(ERROR, "Invalid organelles type: %s", organelles_type);
-    }
-
+    char* db_path = (char*)malloc(sizeof(*db_path) * (snprintf(NULL, 0, "%s/Conserved_PCGs_db/Plant_conserved_cpgene_nt.fa", dir) + 1));
+    sprintf(db_path, "%s/Conserved_PCGs_db/Plant_conserved_cpgene_nt.fa", dir);
     free(dir);
 
     mkdirfiles(output_path);
 
-    size_t blastn_out_len = strlen(output_path) + strlen("/PMAT_pt_blastn.txt") + 1;
-    char blastn_out[blastn_out_len];
-    snprintf(blastn_out, blastn_out_len, "%s/PMAT_pt_blastn.txt", output_path);
+    char* blastn_out = (char*)malloc(sizeof(*blastn_out) * (snprintf(NULL, 0, "%s/PMAT_pt_blastn.txt", output_path) + 1));
+    sprintf(blastn_out, "%s/PMAT_pt_blastn.txt", output_path);
     
     /* Run blastn */
     int num_hits = 0;
@@ -337,6 +319,7 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
     /* PCGs; Contigs; Score */
     SortPcgCtgs *ptpcg_ctgs = NULL;
     size_t blt_len;
+    uint64_t i;
     char *blt_line = NULL;
     
     int seeds_ctg = 0;
@@ -541,12 +524,12 @@ static void filter_same_gene_matches(BlastDircMatch* matches, int* match_count) 
 
 
 void mrun_blastn(const char *all_contigs, const char *db_path, char *final_out, int num_threads, int *num_hits) {
-    char temp_out[strlen(final_out) + 20];
+    char* temp_out = (char*)malloc(sizeof(*temp_out) * (snprintf(NULL, 0, "%s.temp", final_out) + 1));
     sprintf(temp_out, "%s.temp", final_out);
 
     uint64_t i;
-    char* command = malloc(strlen("blastn -db  -query  -outfmt 6 -num_threads  > ") + 
-                         strlen(db_path) + strlen(all_contigs) + strlen(temp_out) + 20);
+    char* command = (char*)malloc(sizeof(*command) * (snprintf(NULL, 0, "blastn -db %s -query %s -outfmt 6 -num_threads %d > %s",
+                                db_path, all_contigs, num_threads, temp_out) + 1));
     sprintf(command, "blastn -db %s -query %s -outfmt 6 -num_threads %d > %s",
             db_path, all_contigs, num_threads, temp_out);
     execute_command(command, 0, 0);

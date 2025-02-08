@@ -50,13 +50,8 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     mkdirfiles(output_path);
 
     // Allocate memory for runAssembly_output
-    size_t runAssembly_output_len = strlen(output_path) + strlen("/assembly_result") + 1;
-    char *runAssembly_output = malloc(runAssembly_output_len);
-    if (!runAssembly_output) {
-        log_message(ERROR, "Memory allocation failed for runAssembly_output");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(runAssembly_output, runAssembly_output_len, "%s/assembly_result", output_path);
+    char* runAssembly_output = (char*)malloc(sizeof(*runAssembly_output) * (snprintf(NULL, 0, "%s/assembly_result", output_path) + 1));
+    sprintf(runAssembly_output, "%s/assembly_result", output_path);
 
     // Resolve absolute path
     char *absolute_assembly_seq = realpath(assembly_seq, NULL);
@@ -67,27 +62,13 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     }
 
     // Allocate memory for mount_output
-    size_t mount_output_len = strlen(output_path) + strlen("/data/") + 1;
-    char *mount_output = malloc(mount_output_len);
-    if (!mount_output) {
-        log_message(ERROR, "Memory allocation failed for mount_output");
-        free(runAssembly_output);
-        free(absolute_assembly_seq);
-        exit(EXIT_FAILURE);
-    }
-    snprintf(mount_output, mount_output_len, "/data/%s", output_path);
+    char* mount_output = (char*)malloc(sizeof(*mount_output) * (snprintf(NULL, 0, "/data/%s", output_path) + 1));
+    sprintf(mount_output, "/data/%s", output_path);
 
     // Allocate memory for bindpath
-    size_t bindpath_len = strlen(absolute_assembly_seq) + strlen(output_path) + strlen(mount_output) + 3 + 1;
-    char *bindpath = malloc(bindpath_len);
-    if (!bindpath) {
-        log_message(ERROR, "Memory allocation failed for bindpath");
-        free(runAssembly_output);
-        free(absolute_assembly_seq);
-        free(mount_output);
-        exit(EXIT_FAILURE);
-    }
-    snprintf(bindpath, bindpath_len, "%s,%s:%s", absolute_assembly_seq, output_path, mount_output);
+    char* bindpath = (char*)malloc(sizeof(*bindpath) * (snprintf(NULL, 0, "%s,%s:%s", 
+                     absolute_assembly_seq, output_path, mount_output) + 1));
+    sprintf(bindpath, "%s,%s:%s", absolute_assembly_seq, output_path, mount_output);
 
     char* command = NULL;
     if (which_executable("apptainer") == 1) {
@@ -203,13 +184,8 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
         if (go_flag != -2 || tm > 3) break;
         float subsize = 0.7;
 
-        char* new_cut_seq = malloc(strlen(assembly_seq) + strlen(".bak") + 1);
-        if (new_cut_seq == NULL) {
-            fprintf(stderr, "Memory allocation failed!\n");
-            exit(EXIT_FAILURE);
-        }
-        snprintf(new_cut_seq, strlen(assembly_seq) + strlen(".bak") + 1, 
-            "%s.bak", assembly_seq);
+        char* new_cut_seq = (char*)malloc(sizeof(*new_cut_seq) * (snprintf(NULL, 0, "%s.bak", assembly_seq) + 1));
+        sprintf(new_cut_seq, "%s.bak", assembly_seq);
         subsample(new_cut_seq, assembly_seq, subsize, 6);
         tm++;
         remove_file(assembly_seq);
@@ -241,15 +217,15 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
 
         remove_prefix_files(runAssembly_output, "454");
         
-        char* sff_dir = malloc(runAssembly_output_len + 100);
-        snprintf(sff_dir, runAssembly_output_len + 100, "%s/sff", runAssembly_output);
+        char* sff_dir = (char*)malloc(sizeof(*sff_dir) * (snprintf(NULL, 0, "%s/sff", runAssembly_output) + 1));
+        sprintf(sff_dir, "%s/sff", runAssembly_output);
         rmdir(sff_dir);
         
     } else {
         remove_prefix_files(runAssembly_output, "454");
         
-        char* sff_dir = malloc(runAssembly_output_len + 100);
-        snprintf(sff_dir, runAssembly_output_len + 100, "%s/sff", runAssembly_output);
+        char* sff_dir = (char*)malloc(sizeof(*sff_dir) * (snprintf(NULL, 0, "%s/sff", runAssembly_output) + 1));
+        sprintf(sff_dir, "%s/sff", runAssembly_output);
         rmdir(sff_dir);
         
         clean_directory(runAssembly_output);

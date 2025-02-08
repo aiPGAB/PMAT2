@@ -297,7 +297,7 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
     int flag_end = 0;
     int* temp_dynseed = calloc(num_dynseeds, sizeof(int));
     khash_t(Ha_nodekmer) *nodeKmer_hash = kh_init(Ha_nodekmer);
-    size_t kmer1000_len = strlen(output) + strlen("/Kmer1000.fa") + 1;
+    size_t kmer1000_len = snprintf(NULL, 0, "%s/Kmer1000.fa", output) + 1;
     char kmer1000[kmer1000_len];
     snprintf(kmer1000, kmer1000_len, "%s/Kmer1000.fa", output);
     FILE* kout = fopen(kmer1000, "w");
@@ -396,20 +396,12 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
     // }
     // snprintf(cutseq, strlen(output) + strlen("/subsample/PMAT_cut_seq.fa") + 1, 
     //     "%s/subsample/PMAT_cut_seq.fa", output);
-    char* cutdb = malloc(strlen(cutseq) + strlen(".db.ndb") + 1);
-    if (cutdb == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(cutdb, strlen(cutseq) + strlen(".db.ndb") + 1, 
+    char* cutdb = malloc(sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1));
+    snprintf(cutdb, sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1), 
         "%s.db.ndb", cutseq);
 
-    char* blast_out = (char*) malloc(strlen(output) + strlen("/PMAT_kmer1000.txt") + 1);
-    if (blast_out == NULL) {
-        fprintf(stderr, "Memory allocation failed!\n");
-        exit(EXIT_FAILURE);
-    }
-    snprintf(blast_out, strlen(output) + strlen("/PMAT_kmer1000.txt") + 1, 
+    char* blast_out = (char*) malloc(sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1));
+    snprintf(blast_out, sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1), 
         "%s/PMAT_kmer1000.txt", output);
     
     if (is_file(cutdb) == 0) run_db(cutseq);
@@ -478,19 +470,19 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
     free(cutdb); free(blast_out);
 
     // create output/gfa_result directory
-    char* gfa_output = (char*) malloc(strlen(output) + strlen("/gfa_result") + 1);
+    char* gfa_output = (char*) malloc(sizeof(*gfa_output) * (snprintf(NULL, 0, "%s/gfa_result", output) + 1));
     sprintf(gfa_output, "%s/gfa_result", output);
     mkdirfiles(gfa_output);
 
-    size_t maingfa_out_len = strlen(gfa_output) + strlen("/PMAT_ty_main.gfa") + 1;
+    size_t maingfa_out_len = snprintf(NULL, 0, "%s/PMAT_%s_main.gfa", gfa_output, organelles_type) + 1;
     char maingfa[maingfa_out_len];
     snprintf(maingfa, maingfa_out_len, "%s/PMAT_%s_main.gfa", gfa_output, organelles_type);
 
-    size_t rawgfa_out_len = strlen(gfa_output) + strlen("/PMAT_ty_raw.gfa") + 1;
+    size_t rawgfa_out_len = snprintf(NULL, 0, "%s/PMAT_%s_raw.gfa", gfa_output, organelles_type) + 1;
     char rawgfa[rawgfa_out_len];
     snprintf(rawgfa, rawgfa_out_len, "%s/PMAT_%s_raw.gfa", gfa_output, organelles_type);
 
-    size_t rawfa_len = strlen(gfa_output) + strlen("/gfa_ty.fa") + 1;
+    size_t rawfa_len = snprintf(NULL, 0, "%s/gfa_%s.fa", gfa_output, organelles_type) + 1;
     char rawfa[rawfa_len];
     snprintf(rawfa, rawfa_len, "%s/gfa_%s.fa", gfa_output, organelles_type);
 
@@ -1077,7 +1069,7 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
         log_message(WARNING, "No main seeds found.");
     }
     /* path to fasta */
-    size_t pathfa_out_len = strlen(gfa_output) + strlen("/PMAT_ty.fa") + 1;
+    size_t pathfa_out_len = snprintf(NULL, 0, "%s/PMAT_%s.fa", gfa_output, organelles_type) + 1;
     char pathfa[pathfa_out_len];
     snprintf(pathfa, pathfa_out_len, "%s/PMAT_%s.fa", gfa_output, organelles_type);
     path2fa(ps_struct, ps_num, h_nodeseq, pathfa);
