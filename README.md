@@ -19,8 +19,6 @@
 If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
 
 
-
-
 - [PMAT2](#h1)
 - [Installation](#C1)
 - [Repuirement](#C2)
@@ -104,8 +102,8 @@ Optional options:
 2. If you want to use nextdenovo for ONT/CLR error correction, you can skip providing a cfg file, and the program will generate a temporary cfg file automatically.
 3. `-k`: If seqtype is hifi, skip kmer frequency estimation and genome size estimation.
 4. `-m`: Keep sequence data in memory to speed up computation.
-5. `-I`: The default value is 90 bp. If the assembly graph is complex, you can increase it appropriately.
-6. `-L`: minimum overlap identity, the default is 40, if it is HiFi data, you can increase it appropriately.
+5. `-I`: minimum overlap identity (default: 90). If the assembly graph is complex, you can increase it appropriately.
+6. `-L`: minimum overlap length (default: 40), if it is HiFi data, you can increase it appropriately.
 
 
 ### <a name="C5">graphBuild</a>
@@ -290,7 +288,7 @@ Updates:
 - Enhanced the genome graph untangling functionality for organellar genomes, enabling resolution of more complex structures.
 - Parallelized key steps in the workflow, significantly improving runtime efficiency.
 
-PMAT version 2.0.1 (25/2/1)</br>
+PMAT version 2.1.0 (25/2/1)</br>
 Updates:
 
 - Added `orgAss` module to evaluate the completeness of the assembly results.

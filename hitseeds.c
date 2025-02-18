@@ -263,6 +263,9 @@ void HitSeeds(const char* exe_path, const char* organelles_type, const char* all
                     if (i < *ctg_threshold) {
                         (*candidate_seeds)[i] = rm_contig(sort_pcg_ctgs[i].ctg);
                     }
+                    if (i == 49) {
+                        break;
+                    }
         }
         log_info(" _______________________________________________________\n");
         log_info("\n");
@@ -380,6 +383,9 @@ void PtHitseeds(const char* exe_path, const char* organelles_type, const char* a
                     );
             if (i < ctg_threshold) {
                 candidate_seeds[i] = rm_contig(ptpcg_ctgs[i].ctg);
+            }
+            if (i == 49) {
+                break;
             }
         }
         log_info(" _______________________________________________________\n");
