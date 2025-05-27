@@ -473,7 +473,8 @@ void execute_command(const char* command, int verbose, int log_output) {
         ssize_t bytes_read;
         char line_buffer[4096] = {0};
         size_t line_buffer_pos = 0;
-
+        size_t i;
+        
         char filtered_output[65536] = {0};  // To hold only filtered, meaningful lines
         size_t filtered_pos = 0;
 
@@ -481,7 +482,7 @@ void execute_command(const char* command, int verbose, int log_output) {
             bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
             if (bytes_read > 0) {
                 buffer[bytes_read] = '\0';
-                for (size_t i = 0; i < bytes_read; i++) {
+                for (i = 0; i < bytes_read; i++) {
                     if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
                         line_buffer[line_buffer_pos] = '\0';
 

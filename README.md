@@ -288,7 +288,7 @@ Updates:
 - Enhanced the genome graph untangling functionality for organellar genomes, enabling resolution of more complex structures.
 - Parallelized key steps in the workflow, significantly improving runtime efficiency.
 
-PMAT version 2.1.2 (25/2/1)</br>
+PMAT version 2.1.0 (25/2/1)</br>
 Updates:
 
 - Added `orgAss` module to evaluate the completeness of the assembly results.
