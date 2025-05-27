@@ -438,7 +438,7 @@ void execute_command(const char* command, int verbose, int log_output) {
     if (verbose) {
         log_info("Running command: %s\n", command);
     }
-    uint64_t i;
+
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         log_message(ERROR, "Failed to create pipe: %s", strerror(errno));
@@ -458,8 +458,8 @@ void execute_command(const char* command, int verbose, int log_output) {
         close(pipefd[1]);
 
         signal(SIGHUP, SIG_IGN);
-
         execl("/bin/sh", "sh", "-c", command, (char *)NULL);
+
         log_message(ERROR, "Failed to execute command: %s", strerror(errno));
         exit(EXIT_FAILURE);
     } else {  // Parent process
@@ -474,42 +474,53 @@ void execute_command(const char* command, int verbose, int log_output) {
         char line_buffer[4096] = {0};
         size_t line_buffer_pos = 0;
 
+        char filtered_output[65536] = {0};  // To hold only filtered, meaningful lines
+        size_t filtered_pos = 0;
+
         while (1) {
             bytes_read = read(pipefd[0], buffer, sizeof(buffer) - 1);
             if (bytes_read > 0) {
                 buffer[bytes_read] = '\0';
-                for (i = 0; i < bytes_read; i++) {
+                for (size_t i = 0; i < bytes_read; i++) {
                     if (buffer[i] == '\n' || line_buffer_pos == sizeof(line_buffer) - 1) {
                         line_buffer[line_buffer_pos] = '\0';
-                        if (strstr(line_buffer, "Warning: [blastn]") == NULL && 
-                        // if (strstr(line_buffer, "Warning: [blastn] Examining 5 or more matches is recommended") == NULL && 
-                            // strstr(line_buffer, "Warning: [blastn] Query is Empty") == NULL &&
+
+                        // Filter unwanted log lines
+                        if (strstr(line_buffer, "Warning: [blastn]") == NULL &&
                             strstr(line_buffer, "Examining 5 or more matches is recommended") == NULL &&
-                            strstr(line_buffer, "v3.0 (20140410_1040)") == NULL &&
                             strstr(line_buffer, "GenomeScope analyzing") == NULL &&
                             strstr(line_buffer, "Model converged") == NULL) {
-                            // Remove CR characters
+
+                            // Remove carriage returns
                             char* cr = strchr(line_buffer, '\r');
                             while (cr != NULL) {
                                 memmove(cr, cr + 1, strlen(cr + 1) + 1);
                                 cr = strchr(cr, '\r');
                             }
+
                             if (log_output) {
                                 log_info("%s\n", line_buffer);
                             }
-                            fflush(stdout);  // Force output to be written immediately
+
+                            // Save filtered line for potential error report
+                            if (filtered_pos + line_buffer_pos + 2 < sizeof(filtered_output)) {
+                                memcpy(filtered_output + filtered_pos, line_buffer, line_buffer_pos);
+                                filtered_pos += line_buffer_pos;
+                                filtered_output[filtered_pos++] = '\n';
+                                filtered_output[filtered_pos] = '\0';
+                            }
                         }
+
                         line_buffer_pos = 0;
                     } else {
                         line_buffer[line_buffer_pos++] = buffer[i];
                     }
                 }
             } else if (bytes_read == 0) {
-                // End of file reached
+                // EOF
                 break;
             } else {
-                // No data available, sleep for a short time
-                sleep_ms(10);  // Sleep for 10ms
+                sleep_ms(10);  // Brief pause
             }
         }
 
@@ -521,6 +532,9 @@ void execute_command(const char* command, int verbose, int log_output) {
             int exit_status = WEXITSTATUS(status);
             if (exit_status != 0) {
                 log_message(ERROR, "Command failed with status: %d", exit_status);
+                if (filtered_pos > 0) {
+                    log_message(ERROR, "%s", filtered_output);
+                }
                 exit(EXIT_FAILURE);
             }
         } else {
@@ -529,6 +543,7 @@ void execute_command(const char* command, int verbose, int log_output) {
         }
     }
 }
+
 
 
 int ass_command(const char *command, int verbose, int log_output) {

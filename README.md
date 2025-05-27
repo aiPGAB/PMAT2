@@ -45,9 +45,9 @@ make
 ```
 Install by downloading the source codes
 ```sh
-wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.1.0.tar.gz
-tar -zxvf PMAT2-2.1.0.tar.gz
-cd PMAT2-2.1.0
+wget https://github.com/aiPGAB/PMAT2/archive/refs/tags/v2.1.2.tar.gz
+tar -zxvf PMAT2-2.1.2.tar.gz
+cd PMAT2-2.1.2
 make
 ./PMAT --help
 ```
@@ -288,7 +288,7 @@ Updates:
 - Enhanced the genome graph untangling functionality for organellar genomes, enabling resolution of more complex structures.
 - Parallelized key steps in the workflow, significantly improving runtime efficiency.
 
-PMAT version 2.1.0 (25/2/1)</br>
+PMAT version 2.1.2 (25/2/1)</br>
 Updates:
 
 - Added `orgAss` module to evaluate the completeness of the assembly results.
