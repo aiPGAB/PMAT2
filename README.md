@@ -15,13 +15,18 @@
 [![Last Commit](https://img.shields.io/github/last-commit/aiPGAB/PMAT2?style=flat-square)](https://github.com/aiPGAB/PMAT2/commits)
 </div>
 
-<div style="display: flex; align-items: center; gap: 20px;">
-  <p style="flex: 1; text-align: left; font-size: 14px; line-height: 1.5;">
-    If you encounter any problems in using PMAT2, please contact the authors by e-mail (Changwei Bi: bichwei@njfu.edu.cn; Fuchuan Han: hanfc@caf.ac.cn) to join the WeChat group (please note your name + organization + PMAT2 in the message).
-    
-  </p>
-  <img src="https://github.com/user-attachments/assets/1e4e48f9-7428-4b2f-a037-5e1f65da5b4e" style="width: 50%; height: auto;">
-</div>
+
+<a href="https://github.com/user-attachments/assets/1e4e48f9-7428-4b2f-a037-5e1f65da5b4e">
+  <img src="https://github.com/user-attachments/assets/1e4e48f9-7428-4b2f-a037-5e1f65da5b4e" align="right" width="500" alt="Graphical Abstract">
+</a>
+
+PMAT2 is a specialized tool for the **de novo assembly of mitochondrial and chloroplast genomes** from HiFi and ONT/CLR data. It supports animal, plant, and fungal organellar genome assembly and integrates a number of optimized algorithms for handling structural complexities.
+
+If you encounter any problems using PMAT2, please contact the authors via email to join the WeChat group (include your *name + organization + PMAT2* in the message):
+
+- **Changwei Bi**: bichwei@njfu.edu.cn  
+- **Fuchuan Han**: hanfc@caf.ac.cn
+
 
 ## <a name="C9">Citation</a>
 Fuchuan Han, Changwei Bi, Yicun Chen, Xiaogang Dai, Zefu Wang, Huaitong Wu, Ning Sun, et al. 2025. PMAT2: An Efficient Graphical Assembly Toolkit for Comprehensive Organellar Genomes. iMeta 4: e70064. https://doi.org/10.1002/imt2.70064 (if you use PMAT2 for organellar genomes)</br>
