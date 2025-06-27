@@ -13,6 +13,7 @@
 [![Release Version](https://img.shields.io/github/v/release/aiPGAB/PMAT2?style=flat-square)](https://github.com/aiPGAB/PMAT2/releases)
 [![License](https://img.shields.io/github/license/aiPGAB/PMAT2?style=flat-square)](LICENSE)
 [![Last Commit](https://img.shields.io/github/last-commit/aiPGAB/PMAT2?style=flat-square)](https://github.com/aiPGAB/PMAT2/commits)
+</div>
 
 <div style="display: flex; align-items: center; gap: 20px;">
   <p style="flex: 1; text-align: left; font-size: 14px; line-height: 1.5;">
@@ -20,7 +21,6 @@
     
   </p>
   <img src="https://github.com/user-attachments/assets/1e4e48f9-7428-4b2f-a037-5e1f65da5b4e" style="width: 50%; height: auto;">
-</div>
 </div>
 
 ## <a name="C9">Citation</a>
