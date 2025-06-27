@@ -1080,19 +1080,21 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
     //     free(mainlinks[i].lctg);
     //     free(mainlinks[i].rctg);
     // }
-    for (i = 0; i < ps_num; i++) {
-        free(ps_struct[i].path_node);
-        free(ps_struct[i].path_utr);
-    }
-    free(ps_struct);
+
+    // for (i = 0; i < ps_num; i++) {
+    //     free(ps_struct[i].path_node);
+    //     free(ps_struct[i].path_utr);
+    // }
+    // free(ps_struct);
+    
     for (k = kh_begin(h_nodeseq); k != kh_end(h_nodeseq); ++k) {
         if (kh_exist(h_nodeseq, k)) {
             free(kh_value(h_nodeseq, k));
         }
     }
     kh_destroy(Ha_nodeseq, h_nodeseq);
-    free(mainlinks);
+    // free(mainlinks);
     // free(mainseeds);
-    free(gfa_output);
-    free(fnainfos);
+    // free(gfa_output);
+    // free(fnainfos);
 }

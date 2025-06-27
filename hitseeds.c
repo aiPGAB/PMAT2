@@ -121,7 +121,7 @@ void HitSeeds(const char* exe_path, const char* organelles_type, const char* all
     
     /* Run blastn */
     int num_hits = 0;
-    mrun_blastn(all_contigs, db_path, blastn_out, num_threads, &num_hits);
+    mrun_blastn(all_contigs, db_path, blastn_out, num_threads, &num_hits); //* 
     
     khash_t(ctg_genes) *h_ctg_genes = kh_init(ctg_genes);
     

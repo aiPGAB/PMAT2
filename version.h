@@ -26,6 +26,6 @@ SOFTWARE.
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VERSION_PMAT "2.1.2"
+#define VERSION_PMAT "2.1.5"
 
 #endif // VERSION_H
