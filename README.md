@@ -81,7 +81,7 @@ Optional options:
    -g, --genomesize     Genome size (g/m/k), skip genome size estimation if set
    -p, --task           Task type (0/1), skip error correction for ONT/CLR by selecting 0, otherwise 1 (default: 1)
    -G, --organelles     Genome organelles (mt/pt/all, default: mt)
-   -x, --taxo           Specify the organism type (0/1), 0: plants, 1: animals (default: 0)
+   -x, --taxo           Specify the organism type (0/1/2), 0: plants, 1: animals, 2: Fungi (default: 0)
    -S, --correctsoft    Error correction software (canu/nextdenovo, default: nextdenovo)
    -C, --canu           Canu path
    -N, --nextdenovo     NextDenovo path
@@ -124,7 +124,7 @@ Required options:
 
 Optional options:
    -G, --organelles     Genome organelles (mt: mitochondria/pt: plastid, default: mt)
-   -x, --taxo           Specify the organism type (0/1), 0: plants, 1: animals (default: 0)
+   -x, --taxo           Specify the organism type (0/1/2), 0: plants, 1: animals, 2: Fungi (default: 0)
    -d, --depth          Contig depth threshold
    -s, --seeds          ContigID for extending. Multiple contigIDs should be separated by space. For example: 1 312 356
    -T, --cpu            Number of threads (default: 8)

@@ -161,7 +161,7 @@ static void node_recursive(int node, bool* link_used, int* visited_nodes, int* v
 }
 
 uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_arry, khash_t(Ha_structures)* h_structures) {
-    int* visited_nodes = (int*)malloc(2 * (link_num + 1) * sizeof(int));
+    int* visited_nodes = (int*)malloc(2 * (node_num + 1) * sizeof(int));
     bool* link_used = (bool*)malloc((link_num + 1) * sizeof(bool));
     memset(link_used, 0, (link_num + 1) * sizeof(bool));
     int visited_num = 0;
@@ -203,7 +203,6 @@ uint32_t bfs_structure(int node_num, int link_num, BFSlinks* links, int* node_ar
         }
     }
     free(visited_nodes);
-    printf("structure_num: %u\n", structure_num);
     free(link_used);
     return structure_num;
 }
