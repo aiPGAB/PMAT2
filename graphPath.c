@@ -447,11 +447,12 @@ static void bfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, BF
     {
         int next_node = node_array[i];
         int next_utr = utr_array[i];
+        bool is_target_return = (next_node == node_t && next_utr != t_utr);
         bool is_chloro = kh_get(node_num, h_chloro, next_node) != kh_end(h_chloro);
         bool is_mito = kh_get(node_num, h_mito, next_node) != kh_end(h_mito);
 
         if (is_chloro && kh_value(h_chloro, kh_get(node_num, h_chloro, next_node)) > 0) continue;
-        if (is_mito && kh_value(h_mito, kh_get(node_num, h_mito, next_node)) == 0) continue;
+        if (is_mito && kh_value(h_mito, kh_get(node_num, h_mito, next_node)) == 0 && !is_target_return) continue;
 
         /* Add node to path */
         current_path->node[current_path->nodenum] = next_node;
@@ -459,7 +460,7 @@ static void bfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, BF
         current_path->nodelen += ctg_depth[next_node - 1].len;
         current_path->nodenum++;
 
-        if (is_mito) kh_value(h_mito, kh_get(node_num, h_mito, next_node))--;
+        if (is_mito && !is_target_return) kh_value(h_mito, kh_get(node_num, h_mito, next_node))--;
 
         if (is_chloro) kh_value(h_chloro, kh_get(node_num, h_chloro, next_node))++;
 
@@ -471,7 +472,7 @@ static void bfs_m(int node_s, int s_utr, int node_t, int t_utr, int main_num, BF
         current_path->type = 1;
         current_path->nodenum--;
         current_path->nodelen -= ctg_depth[next_node - 1].len;
-        if (is_mito) kh_value(h_mito, kh_get(node_num, h_mito, next_node))++;
+        if (is_mito && !is_target_return) kh_value(h_mito, kh_get(node_num, h_mito, next_node))++;
         if (is_chloro) kh_value(h_chloro, kh_get(node_num, h_chloro, next_node))--;
     }
     current_path->type = 1;
@@ -543,6 +544,13 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
     kh_copy(bfs_path.mpath[0].h_mito, h_mito);
     kh_copy(bfs_path.mpath[0].h_chloro, h_chloro);
 
+    {
+        khiter_t k_start = kh_get(node_num, bfs_path.mpath[0].h_mito, nodes);
+        if (k_start != kh_end(bfs_path.mpath[0].h_mito) && kh_value(bfs_path.mpath[0].h_mito, k_start) > 0) {
+            kh_value(bfs_path.mpath[0].h_mito, k_start)--;
+        }
+    }
+
     uint64_t i, j;
     for (i = 0; i < 2*max_paths; i++) {
         bfs_path.flag[i] = 1;
@@ -576,12 +584,13 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
                     continue;
                 }
 
+                bool is_target_return = (tempmap[0] == nodet && temputr[0] != utrt);
                 bool is_chloro = kh_get(node_num, bfs_path.mpath[i].h_chloro, tempmap[0]) != kh_end(bfs_path.mpath[i].h_chloro);
                 bool is_mito = kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[0]) != kh_end(bfs_path.mpath[i].h_mito);
 
                 if (is_chloro && kh_value(bfs_path.mpath[i].h_chloro, kh_get(node_num, bfs_path.mpath[i].h_chloro, tempmap[0])) > 1) {bfs_path.flag[i] = 0; continue;}
-                if (is_mito && kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[0])) == 0) {bfs_path.flag[i] = 0; continue;}
-                if (is_mito) kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[0]))--;
+                if (is_mito && kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[0])) == 0 && !is_target_return) {bfs_path.flag[i] = 0; continue;}
+                if (is_mito && !is_target_return) kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[0]))--;
                 if (is_chloro) kh_value(bfs_path.mpath[i].h_chloro, kh_get(node_num, bfs_path.mpath[i].h_chloro, tempmap[0]))++;
                 
                 bfs_path.mpath[i].nodenum++;
@@ -609,11 +618,12 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
                         break;
                     }
                 
+                    bool is_target_return = (tempmap[j] == nodet && temputr[j] != utrt);
                     bool is_chloro = kh_get(node_num, bfs_path.mpath[i].h_chloro, tempmap[j]) != kh_end(bfs_path.mpath[i].h_chloro);
                     bool is_mito = kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[j]) != kh_end(bfs_path.mpath[i].h_mito);
 
                     if (is_chloro && kh_value(bfs_path.mpath[i].h_chloro, kh_get(node_num, bfs_path.mpath[i].h_chloro, tempmap[j])) > 1) {bfs_path.flag[dy_path_index] = 0; continue;}
-                    if (is_mito && kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[j])) == 0) {bfs_path.flag[dy_path_index] = 0; continue;}
+                    if (is_mito && kh_value(bfs_path.mpath[i].h_mito, kh_get(node_num, bfs_path.mpath[i].h_mito, tempmap[j])) == 0 && !is_target_return) {bfs_path.flag[dy_path_index] = 0; continue;}
 
                     bfs_path.mpath[dy_path_index].nodenum = temp_mpath.nodenum;
                     bfs_path.mpath[dy_path_index].path = (int*)malloc(max_node * sizeof(int));
@@ -628,7 +638,7 @@ void bfsMap(int nodes, int utrs, int nodet, int utrt, CtgDepth *ctg_depth, mpath
                     kh_copy(bfs_path.mpath[dy_path_index].h_mito, temp_mpath.h_mito);
                     kh_copy(bfs_path.mpath[dy_path_index].h_chloro, temp_mpath.h_chloro);
 
-                    if (is_mito) kh_value(bfs_path.mpath[dy_path_index].h_mito, kh_get(node_num, bfs_path.mpath[dy_path_index].h_mito, tempmap[j]))--;
+                    if (is_mito && !is_target_return) kh_value(bfs_path.mpath[dy_path_index].h_mito, kh_get(node_num, bfs_path.mpath[dy_path_index].h_mito, tempmap[j]))--;
                     if (is_chloro) kh_value(bfs_path.mpath[dy_path_index].h_chloro, kh_get(node_num, bfs_path.mpath[dy_path_index].h_chloro, tempmap[j]))++;
                     
                     bfs_path.mpath[dy_path_index].nodenum++;
