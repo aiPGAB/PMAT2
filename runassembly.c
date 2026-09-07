@@ -49,26 +49,33 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
 
     mkdirfiles(output_path);
 
+    char *absolute_output_path = realpath(output_path, NULL);
+    if (!absolute_output_path) {
+        log_message(ERROR, "Error resolving absolute path of output_path: %s", output_path);
+        exit(EXIT_FAILURE);
+    }
+
     // Allocate memory for runAssembly_output
     char* runAssembly_output = (char*)malloc(sizeof(*runAssembly_output) * (snprintf(NULL, 0, "%s/assembly_result", output_path) + 1));
     sprintf(runAssembly_output, "%s/assembly_result", output_path);
+
+    char* absolute_assembly_output = (char*)malloc(sizeof(*absolute_assembly_output) * (snprintf(NULL, 0, "%s/assembly_result", absolute_output_path) + 1));
+    sprintf(absolute_assembly_output, "%s/assembly_result", absolute_output_path);
 
     // Resolve absolute path
     char *absolute_assembly_seq = realpath(assembly_seq, NULL);
     if (!absolute_assembly_seq) {
         log_message(ERROR, "Error resolving absolute path of assembly_seq");
         free(runAssembly_output);
+        free(absolute_assembly_output);
+        free(absolute_output_path);
         exit(EXIT_FAILURE);
     }
 
-    // Allocate memory for mount_output
-    char* mount_output = (char*)malloc(sizeof(*mount_output) * (snprintf(NULL, 0, "/data/%s", output_path) + 1));
-    sprintf(mount_output, "/data/%s", output_path);
-
     // Allocate memory for bindpath
     char* bindpath = (char*)malloc(sizeof(*bindpath) * (snprintf(NULL, 0, "%s,%s:%s", 
-                     absolute_assembly_seq, output_path, mount_output) + 1));
-    sprintf(bindpath, "%s,%s:%s", absolute_assembly_seq, output_path, mount_output);
+                     absolute_assembly_seq, absolute_output_path, absolute_output_path) + 1));
+    sprintf(bindpath, "%s,%s:%s", absolute_assembly_seq, absolute_output_path, absolute_output_path);
 
     char* command = NULL;
     if (which_executable("apptainer") == 1) {
@@ -78,7 +85,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
         }
 
         size_t cmd_len = snprintf(NULL, 0, "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
-            sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq) + 1;
+            sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
 
         if (mem) {
@@ -88,20 +95,20 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -cpu %d -het -force -sio -m \\\n"
                     "     -urt -large -s 100 -nobig -mi %d \\\n"
                     "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
                     "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         } else {
             log_info("Running command:\n"
                     " apptainer exec %s \\\n"
                     "     runAssembly \\\n"
                     "     -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d \\\n"
                     "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
                     "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         }
 
     } else if (which_executable("singularity") == 1) {
@@ -111,7 +118,7 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
         }
 
         size_t cmd_len = snprintf(NULL, 0, "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
-            sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq) + 1;
+            sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
         if (mem) {
             log_info("Running command:\n"
@@ -120,20 +127,20 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
                     "     -cpu %d -het -force -sio -m \\\n"
                     "     -urt -large -s 100 -nobig -mi %d \\\n"
                     "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
                     "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         } else {
             log_info("Running command:\n"
                     " singularity exec %s \\\n"
                     "     runAssembly \\\n"
                     "     -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d \\\n"
                     "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
             snprintf(command, cmd_len,
                     "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, runAssembly_output, absolute_assembly_seq);
+                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         }
     } else {
         log_message(ERROR, "Neither apptainer nor singularity is installed.");
@@ -234,8 +241,9 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     }
 
     free(runAssembly_output);
+    free(absolute_assembly_output);
+    free(absolute_output_path);
     free(absolute_assembly_seq);
-    free(mount_output);
     free(bindpath);
 
     log_message(INFO, "Reads assembly end.");
