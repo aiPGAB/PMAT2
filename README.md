@@ -48,7 +48,7 @@ cd PMAT2-2.2.0
 ### Method 2: Clone from GitHub
 
 ```sh
-git clone https://github.com/aiPGAB/PMAT2.git
+git clone --depth 1 https://github.com/aiPGAB/PMAT2.git
 cd PMAT2
 ./PMAT --help
 ```
