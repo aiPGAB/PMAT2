@@ -389,85 +389,90 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
 
     /* circular / linear */
     int num_hits = 0;
-    // char* cutseq = malloc(strlen(output) + strlen("/subsample/PMAT_cut_seq.fa") + 1);
-    // if (cutseq == NULL) {
-    //     fprintf(stderr, "Memory allocation failed!\n");
-    //     exit(EXIT_FAILURE);
-    // }
-    // snprintf(cutseq, strlen(output) + strlen("/subsample/PMAT_cut_seq.fa") + 1, 
-    //     "%s/subsample/PMAT_cut_seq.fa", output);
-    char* cutdb = malloc(sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1));
-    snprintf(cutdb, sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1), 
-        "%s.db.ndb", cutseq);
-
-    char* blast_out = (char*) malloc(sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1));
-    snprintf(blast_out, sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1), 
-        "%s/PMAT_kmer1000.txt", output);
-    
-    if (is_file(cutdb) == 0) run_db(cutseq);
-    run_blastn(cutseq, kmer1000, blast_out, 8, &num_hits);
-    remove_file(kmer1000);
     /* the type of contig structure */
     uint64_t i, j, n;
-    if (num_hits > 0) {
-        FILE* fpblast = fopen(blast_out, "r");
-        if (fpblast == NULL) {
-            log_message(ERROR, "Failed to open blast_out file %s", blast_out);
-            exit(EXIT_FAILURE);
-        }
+    if (cutseq == NULL || cutseq[0] == '\0') {
+        log_message(INFO, "Skip circular check: cutseq not provided.");
+        remove_file(kmer1000);
+    } else {
+        // char* cutseq = malloc(strlen(output) + strlen("/subsample/PMAT_cut_seq.fa") + 1);
+        // if (cutseq == NULL) {
+        //     fprintf(stderr, "Memory allocation failed!\n");
+        //     exit(EXIT_FAILURE);
+        // }
+        // snprintf(cutseq, strlen(output) + strlen("/subsample/PMAT_cut_seq.fa") + 1, 
+        //     "%s/subsample/PMAT_cut_seq.fa", output);
+        char* cutdb = malloc(sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1));
+        snprintf(cutdb, sizeof(*cutdb) * (snprintf(NULL, 0, "%s.db.ndb", cutseq) + 1), 
+            "%s.db.ndb", cutseq);
+
+        char* blast_out = (char*) malloc(sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1));
+        snprintf(blast_out, sizeof(*blast_out) * (snprintf(NULL, 0, "%s/PMAT_kmer1000.txt", output) + 1), 
+            "%s/PMAT_kmer1000.txt", output);
         
-        size_t blt_len;
-        char *blt_line = NULL;
-        while ((blt_len = getline(&blt_line, &len, fpblast)) != -1) {
-            int tempctg;
-            float tempiden;
-            int temps;
-            int tempe;
-
-            if (blt_line[0] == '#') {
-                continue;
-            } else {
-                sscanf(blt_line, "%d\t%*d\t%f\t%*d\t%*d\t%*d\t%d\t%d\t%*f\t%*d", &tempctg, &tempiden, &temps, &tempe);
+        if (is_file(cutdb) == 0) run_db(cutseq);
+        run_blastn(cutseq, kmer1000, blast_out, 8, &num_hits);
+        remove_file(kmer1000);
+        if (num_hits > 0) {
+            FILE* fpblast = fopen(blast_out, "r");
+            if (fpblast == NULL) {
+                log_message(ERROR, "Failed to open blast_out file %s", blast_out);
+                exit(EXIT_FAILURE);
             }
-            if (kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) != 0){
-                if (tempiden > 0.99 && temps <= 450 && tempe >= 550) {
-                    int add_flag = 1;
-                    for (i = 0; i < *num_bfslinks; i++) {
-                        if ((*bfslinks)[i].lctgsmp == tempctg && (*bfslinks)[i].rctgsmp == tempctg) {
-                            add_flag = 0;
-                            kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) = 0;
-                            break;
-                        }
-                    }
-                    kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) += 1;
+            
+            size_t blt_len;
+            char *blt_line = NULL;
+            while ((blt_len = getline(&blt_line, &len, fpblast)) != -1) {
+                int tempctg;
+                float tempiden;
+                int temps;
+                int tempe;
 
-                    if (add_flag && kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) >= 4) {
-                        (*bfslinks) = realloc(*bfslinks, (*num_bfslinks + 1)*sizeof(BFSlinks));
-                        if (*bfslinks == NULL) {
-                            log_message(ERROR, "Failed to allocate memory for BFSlinks");
-                            exit(EXIT_FAILURE);
+                if (blt_line[0] == '#') {
+                    continue;
+                } else {
+                    sscanf(blt_line, "%d\t%*d\t%f\t%*d\t%*d\t%*d\t%d\t%d\t%*f\t%*d", &tempctg, &tempiden, &temps, &tempe);
+                }
+                if (kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) != 0){
+                    if (tempiden > 0.99 && temps <= 450 && tempe >= 550) {
+                        int add_flag = 1;
+                        for (i = 0; i < *num_bfslinks; i++) {
+                            if ((*bfslinks)[i].lctgsmp == tempctg && (*bfslinks)[i].rctgsmp == tempctg) {
+                                add_flag = 0;
+                                kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) = 0;
+                                break;
+                            }
                         }
-                        // (*bfslinks)[*num_bfslinks].lctg = strdup(ctgdepth[tempctg - 1].ctg);
-                        (*bfslinks)[*num_bfslinks].lutrsmp = 5;
-                        (*bfslinks)[*num_bfslinks].lctgsmp = tempctg;
-                        (*bfslinks)[*num_bfslinks].lctglen = ctgdepth[tempctg - 1].len;
-                        
-                        // (*bfslinks)[*num_bfslinks].rctg = strdup(ctgdepth[tempctg - 1].ctg);
-                        (*bfslinks)[*num_bfslinks].rutrsmp = 3;
-                        (*bfslinks)[*num_bfslinks].rctgsmp = tempctg;
-                        (*bfslinks)[*num_bfslinks].rctglen = ctgdepth[tempctg - 1].len;
-                        
-                        (*bfslinks)[*num_bfslinks].linkdepth = ctgdepth[tempctg - 1].depth;
-                        (*num_bfslinks)++;
-                        
-                        kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) = 0;
+                        kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) += 1;
+
+                        if (add_flag && kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) >= 4) {
+                            (*bfslinks) = realloc(*bfslinks, (*num_bfslinks + 1)*sizeof(BFSlinks));
+                            if (*bfslinks == NULL) {
+                                log_message(ERROR, "Failed to allocate memory for BFSlinks");
+                                exit(EXIT_FAILURE);
+                            }
+                            // (*bfslinks)[*num_bfslinks].lctg = strdup(ctgdepth[tempctg - 1].ctg);
+                            (*bfslinks)[*num_bfslinks].lutrsmp = 5;
+                            (*bfslinks)[*num_bfslinks].lctgsmp = tempctg;
+                            (*bfslinks)[*num_bfslinks].lctglen = ctgdepth[tempctg - 1].len;
+                            
+                            // (*bfslinks)[*num_bfslinks].rctg = strdup(ctgdepth[tempctg - 1].ctg);
+                            (*bfslinks)[*num_bfslinks].rutrsmp = 3;
+                            (*bfslinks)[*num_bfslinks].rctgsmp = tempctg;
+                            (*bfslinks)[*num_bfslinks].rctglen = ctgdepth[tempctg - 1].len;
+                            
+                            (*bfslinks)[*num_bfslinks].linkdepth = ctgdepth[tempctg - 1].depth;
+                            (*num_bfslinks)++;
+                            
+                            kh_value(nodeKmer_hash, kh_get(Ha_nodekmer, nodeKmer_hash, tempctg)) = 0;
+                        }
                     }
                 }
             }
         }
+        remove_file(blast_out);
+        free(cutdb); free(blast_out);
     }
-    remove_file(blast_out);
-    free(cutdb); free(blast_out);
 
     // create output/gfa_result directory
     char* gfa_output = (char*) malloc(sizeof(*gfa_output) * (snprintf(NULL, 0, "%s/gfa_result", output) + 1));
@@ -634,7 +639,7 @@ void optgfa(const char* exe_path, int num_dynseeds, int** dynseeds, BFSlinks** b
             }
         }
         if (temp_filter_depth < filter_depth) {
-            temp_filter_depth = (10/3) * filter_depth;
+            temp_filter_depth = (10.0 / 3.0) * filter_depth;
         }
 
         for (i = 0; i < structure_num; i++)

@@ -323,9 +323,32 @@ int which_executable(const char *exe) {
 
 /* create and check files and directories */
 void mkdirfiles(const char *dir_path) {
-    if (access(dir_path, F_OK) != 0) {
-        if (mkdir(dir_path, 0777) != 0) {
-            log_message(ERROR, "Error creating output directory");
+    if (!dir_path || access(dir_path, F_OK) == 0) return;
+
+    char tmp[4096];
+    char *p = NULL;
+    size_t len = snprintf(tmp, sizeof(tmp), "%s", dir_path);
+    if (len >= sizeof(tmp)) {
+        log_message(ERROR, "Directory path too long: %s", dir_path);
+        exit(EXIT_FAILURE);
+    }
+    if (len > 1 && tmp[len - 1] == '/') tmp[len - 1] = '\0';
+
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = '\0';
+            if (access(tmp, F_OK) != 0) {
+                if (mkdir(tmp, 0777) != 0 && errno != EEXIST) {
+                    log_message(ERROR, "Error creating output directory '%s': %s", tmp, strerror(errno));
+                    exit(EXIT_FAILURE);
+                }
+            }
+            *p = '/';
+        }
+    }
+    if (access(tmp, F_OK) != 0) {
+        if (mkdir(tmp, 0777) != 0 && errno != EEXIST) {
+            log_message(ERROR, "Error creating output directory '%s': %s", tmp, strerror(errno));
             exit(EXIT_FAILURE);
         }
     }

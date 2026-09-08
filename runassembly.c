@@ -43,7 +43,7 @@ void remove_prefix_files(const char *dir, const char *prefix);
 void clean_directory(const char *dir);
 
 
-void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const char *output_path, int mi, int ml, int mem, float genomesize_bp) {
+void run_Assembly(const char *exec_path, int cpu, const char *assembly_seq, const char *output_path, int mi, int ml, int mem, float genomesize_bp) {
 
     log_message(INFO, "Reads assembly start...");
 
@@ -65,124 +65,62 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     // Resolve absolute path
     char *absolute_assembly_seq = realpath(assembly_seq, NULL);
     if (!absolute_assembly_seq) {
-        log_message(ERROR, "Error resolving absolute path of assembly_seq");
+        log_message(ERROR, "Error resolving absolute path of assembly_seq: %s", assembly_seq);
         free(runAssembly_output);
         free(absolute_assembly_output);
         free(absolute_output_path);
         exit(EXIT_FAILURE);
     }
 
-    // Allocate memory for bindpath
-    char* bindpath = (char*)malloc(sizeof(*bindpath) * (snprintf(NULL, 0, "%s,%s:%s", 
-                     absolute_assembly_seq, absolute_output_path, absolute_output_path) + 1));
-    sprintf(bindpath, "%s,%s:%s", absolute_assembly_seq, absolute_output_path, absolute_output_path);
-
     char* command = NULL;
-    if (which_executable("apptainer") == 1) {
-        if (setenv("APPTAINER_BINDPATH", bindpath, 1) != 0) {
-            log_message(ERROR, "Error setting APPTAINER_BINDPATH");
-            exit(EXIT_FAILURE);
-        }
 
-        size_t cmd_len = snprintf(NULL, 0, "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
-            sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
-        command = malloc(cmd_len);
-
-        if (mem) {
-            log_info("Running command:\n"
-                    " apptainer exec %s \\\n"
-                    "     runAssembly \\\n"
-                    "     -cpu %d -het -force -sio -m \\\n"
-                    "     -urt -large -s 100 -nobig -mi %d \\\n"
-                    "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-            snprintf(command, cmd_len,
-                    "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-        } else {
-            log_info("Running command:\n"
-                    " apptainer exec %s \\\n"
-                    "     runAssembly \\\n"
-                    "     -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d \\\n"
-                    "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-            snprintf(command, cmd_len,
-                    "setsid apptainer exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
+    if (strchr(exec_path, '/') != NULL) {
+        char *abs_exec = realpath(exec_path, NULL);
+        if (abs_exec) {
+            char *bin_dir = dirname(strdup(abs_exec));
+            const char *current_path = getenv("PATH");
+            size_t new_path_len = strlen(bin_dir) + (current_path ? strlen(current_path) + 2 : 1);
+            char *new_path = (char*)malloc(new_path_len);
+            if (current_path) {
+                snprintf(new_path, new_path_len, "%s:%s", bin_dir, current_path);
+            } else {
+                snprintf(new_path, new_path_len, "%s", bin_dir);
+            }
+            setenv("PATH", new_path, 1);
+            free(new_path);
+            free(bin_dir);
+            free(abs_exec);
         }
-
-    } else if (which_executable("singularity") == 1) {
-        if (setenv("SINGULARITY_BINDPATH", bindpath, 1) != 0) {
-            log_message(ERROR, "Error setting SINGULARITY_BINDPATH");
-            exit(EXIT_FAILURE);
-        }
-
-        size_t cmd_len = snprintf(NULL, 0, "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -m -nobig -mi %d -ml %d -o %s %s", 
-            sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
-        command = malloc(cmd_len);
-        if (mem) {
-            log_info("Running command:\n"
-                    " singularity exec %s \\\n"
-                    "     runAssembly \\\n"
-                    "     -cpu %d -het -force -sio -m \\\n"
-                    "     -urt -large -s 100 -nobig -mi %d \\\n"
-                    "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-            snprintf(command, cmd_len,
-                    "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-        } else {
-            log_info("Running command:\n"
-                    " singularity exec %s \\\n"
-                    "     runAssembly \\\n"
-                    "     -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d \\\n"
-                    "     -ml %d -o %s %s\n\n",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-            snprintf(command, cmd_len,
-                    "setsid singularity exec %s runAssembly -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
-                    sif_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
-        }
-    } else {
-        log_message(ERROR, "Neither apptainer nor singularity is installed.");
-        exit(EXIT_FAILURE);
     }
 
-    // int go_flag = ass_command(command, 0, 1);
-    // int tm = 0;
-    // while(1)
-    // {
-    //     if (go_flag == 0 || tm > 3) break;
-        
-    //     long longassembly_bp = getFileSize(assembly_seq);
-    //     float seq_depth = (float)longassembly_bp / (float)genomesize_bp;
-    //     float subsize = 0.0;
-    //     if (seq_depth >= 5) {
-    //         subsize = (seq_depth + 5) / (2 * seq_depth);
-    //     } else if (seq_depth >= 2) {
-    //         subsize = (seq_depth + 2) / (2 * seq_depth);
-    //     } else {
-    //         log_message(ERROR, "The sequence depth is too low.");
-    //         delete_directory(runAssembly_output);
-    //         free(dir);
-    //         exit(EXIT_FAILURE);
-    //     }
-
-    //     char* new_cut_seq = malloc(strlen(assembly_seq) + strlen(".bak") + 1);
-    //     if (new_cut_seq == NULL) {
-    //         fprintf(stderr, "Memory allocation failed!\n");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //     snprintf(new_cut_seq, strlen(assembly_seq) + strlen(".bak") + 1, 
-    //         "%s.bak", assembly_seq);
-    //     subsample(new_cut_seq, assembly_seq, subsize, 6);
-    //     tm++;
-    //     remove_file(assembly_seq);
-    //     rename_file(new_cut_seq, assembly_seq);
-    //     free(new_cut_seq);
-
-    //     go_flag = ass_command(command, 0, 0);
-    // }
-    // free(command);
+    if (mem) {
+        log_info("Running command:\n"
+                " %s \\\n"
+                "     -cpu %d -het -force -sio -m \\\n"
+                "     -urt -large -s 100 -nobig -mi %d \\\n"
+                "     -ml %d -o %s %s\n\n",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
+        size_t cmd_len = snprintf(NULL, 0,
+                "setsid %s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
+        command = malloc(cmd_len);
+        snprintf(command, cmd_len,
+                "setsid %s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
+    } else {
+        log_info("Running command:\n"
+                " %s \\\n"
+                "     -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d \\\n"
+                "     -ml %d -o %s %s\n\n",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
+        size_t cmd_len = snprintf(NULL, 0,
+                "setsid %s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
+        command = malloc(cmd_len);
+        snprintf(command, cmd_len,
+                "setsid %s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
+    }
 
     int go_flag = ass_command(command, 0, 1);
     int tm = 0;
@@ -203,7 +141,6 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     }
     free(command);
 
-    // 
     size_t contig_fna_len = snprintf(NULL, 0, "%s/454AllContigs.fna", runAssembly_output) + 1;
     char contig_fna[contig_fna_len];
     size_t contig_graph_len = snprintf(NULL, 0, "%s/454ContigGraph.txt", runAssembly_output) + 1;
@@ -244,7 +181,6 @@ void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, const
     free(absolute_assembly_output);
     free(absolute_output_path);
     free(absolute_assembly_seq);
-    free(bindpath);
 
     log_message(INFO, "Reads assembly end.");
 }
@@ -260,11 +196,9 @@ int remove_dir(const char *path) {
     DIR *dir = opendir(path);
 
     if (dir == NULL) {
-        log_message( ERROR, "Unable to open directory");
-        free(dir);
-        exit(EXIT_FAILURE);
+        log_message(ERROR, "Unable to open directory: %s", path);
+        return -1;
     }
-
     while ((entry = readdir(dir)) != NULL) {
         char full_path[4096];
 

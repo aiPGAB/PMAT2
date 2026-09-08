@@ -114,6 +114,7 @@ void autoMito_usage() {
         "   -L, --minoverlaplen  Set minimum overlap length (default: 40)\n"
         "   -T, --cpu            Number of threads (default: 8)\n"
         "   -m, --mem            Keep sequence data in memory to speed up computation\n"
+        "   -r, --runassembly    Custom path to runAssembly (default: bin/runAssembly)\n"
         "   -h, --help           Show this help message and exit\n"
         
     );
@@ -146,6 +147,7 @@ void graphBuild_usage() {
 
 
 
+
 void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *opts) {
     
     int option_index = 0;
@@ -169,13 +171,14 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         {"minoverlaplen", 1, 0, 'L'},
         {"cpu", 1, 0, 'T'},
         {"mem", 0, 0, 'm'},
+        {"runassembly", 1, 0, 'r'},
         {"help", 0, 0, 'h'},
         {"version", 0, 0, 'v'},
         {0, 0, 0, 0}
     };
 
     while (1) {
-        int c = getopt_long(argc, argv, ":i:o:t:k:g:p:G:x:S:C:N:n:F:D:K:I:L:T:mhv", long_options, &option_index);
+        int c = getopt_long(argc, argv, ":i:o:t:k:g:p:G:x:S:C:N:n:F:D:K:I:L:T:mr:hv", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -205,6 +208,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
             case 'L': opts->ml = atoi(optarg); break;
             case 'T': opts->cpu = atoi(optarg); break;
             case'm': opts->mem = 1; break;
+            case 'r': opts->runassembly = optarg; break;
             case 'h': autoMito_usage(); exit(EXIT_SUCCESS);
             case 'v': log_info("PMAT v%s\n", VERSION_PMAT); exit(EXIT_SUCCESS);
             default: log_message(ERROR, "Invalid option: %c", c); autoMito_usage(); exit(EXIT_FAILURE);
@@ -332,10 +336,7 @@ void autoMito_arguments(int argc, char *argv[], char* exe_path, autoMitoArgs *op
         exit(EXIT_FAILURE);
     }
 
-    if (which_executable("apptainer") == 0 && which_executable("singularity") == 0) {
-        log_message(ERROR, "Can't find apptainer or singularity, please install one of them");
-        exit(EXIT_FAILURE);
-    }
+
     // if (*organelles != NULL) {
     //     if (strcmp(*organelles, "mt") != 0 && strcmp(*organelles, "pt") != 0 && strcmp(*organelles, "all") != 0) {
     //         log_message(ERROR, "Invalid organelles type (mt/pt/all): %s", organelles);
@@ -476,6 +477,7 @@ void graphBuild_arguments(int argc, char *argv[], graphBuildArgs *args) {
 
 }
 
+
 int main(int argc, char *argv[]) {
     
     // char *exe_path = realpath(argv[0], NULL);
@@ -532,7 +534,6 @@ int main(int argc, char *argv[]) {
 
             log_message(INFO, "PMAT v%s", VERSION_PMAT);
             graphBuild(exe_path, &optgraph);
-
         } else if (strcmp(argv[1], "-v") == 0 || strcmp(argv[1], "--version") == 0) {
             log_info("PMAT v%s\n", VERSION_PMAT);
             exit(EXIT_SUCCESS);

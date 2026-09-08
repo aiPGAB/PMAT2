@@ -123,8 +123,16 @@ void subsample(const char* output, const char* corrected_seq, double factor, int
         fclose(ungz_in);
         ungz_in = fopen(corrected_seq, "r");
     }  else {
-        log_message(ERROR, "Invalid fasta file");
+        log_message(ERROR, "Invalid fasta file: %s", corrected_seq);
         fclose(fp_result);
+        remove(output);
+        exit(EXIT_FAILURE);
+    }
+
+    if (seq_num == 0) {
+        log_message(ERROR, "No sequences found in %s", corrected_seq);
+        fclose(fp_result);
+        remove(output);
         exit(EXIT_FAILURE);
     }
 

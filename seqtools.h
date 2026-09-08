@@ -48,7 +48,7 @@ void nextdenovo_correct(const char* nextdenovo_path, const char* canu_path,
                         int cpu, int genomeSize);
 
 /* runassembly.c */
-void run_Assembly(const char *sif_path, int cpu, const char *assembly_seq, 
+void run_Assembly(const char *exec_path, int cpu, const char *assembly_seq, 
                     const char *output_path, int mi, int ml, int mem, float genomesize_bp);
 
 

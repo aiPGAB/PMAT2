@@ -246,17 +246,34 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
         remove_file(subsample_seq);
     }
 
+    checkfile(cut_seq);
 
     /* run assembly */
     char* dir_pmat = dirname(strdup(exe_path));
-    char sif_path[4096];
-    snprintf(sif_path, sizeof(sif_path), "%s/container/runAssembly.sif", dir_pmat);
-    free(dir_pmat);
-    if (is_file(sif_path) == 0) {
-        log_message(ERROR, "Failed to find container: %s", sif_path);
+    char exec_path[4096];
+
+    if (opts->runassembly != NULL) {
+        snprintf(exec_path, sizeof(exec_path), "%s", opts->runassembly);
+    } else {
+        snprintf(exec_path, sizeof(exec_path), "%s/bin/runAssembly", dir_pmat);
+        if (is_file(exec_path) == 0) {
+            if (which_executable("runAssembly") == 1) {
+                snprintf(exec_path, sizeof(exec_path), "runAssembly");
+            } else {
+                log_message(ERROR, "runAssembly not found in %s/bin/runAssembly or system PATH. Please specify with -r/--runassembly", dir_pmat);
+                free(dir_pmat);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+    if (strcmp(exec_path, "runAssembly") != 0 && is_file(exec_path) == 0) {
+        log_message(ERROR, "runAssembly file does not exist: %s", exec_path);
+        free(dir_pmat);
         exit(EXIT_FAILURE);
     }
-    run_Assembly(sif_path, opts->cpu, cut_seq, opts->output_file, opts->mi, opts->ml, opts->mem, genomesize_bp); //*
+    free(dir_pmat);
+
+    run_Assembly(exec_path, opts->cpu, cut_seq, opts->output_file, opts->mi, opts->ml, opts->mem, genomesize_bp);
 
     char* assembly_fna = (char*)malloc(sizeof(*assembly_fna) * (snprintf(NULL, 0, "%s/assembly_result/PMATAllContigs.fna", opts->output_file) + 1));
     sprintf(assembly_fna, "%s/assembly_result/PMATAllContigs.fna", opts->output_file);
@@ -290,12 +307,19 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
     }
     rewind(graph_file);
 
+    if (num_ctg == 0) {
+        log_message(ERROR, "No contigs assembled in %s. Please check input data quality.", assembly_graph);
+        fclose(graph_file);
+        free(line);
+        exit(EXIT_FAILURE);
+    }
 
     Ctglinks* ctglinks = calloc(num_links, sizeof(Ctglinks));
     CtgDepth* ctgdepth = calloc(num_ctg, sizeof(CtgDepth));
     int num_taxa = 200;
     if (opts->taxo == 2) num_taxa = 100;
     int ctg_arr[num_taxa];
+    memset(ctg_arr, 0, sizeof(ctg_arr));
     int ctg_arr_idx = 0;
     int ctglink_idx = 0;
     // int ctg_idx = 0;
@@ -380,7 +404,17 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
 
     // uint64_t longassembly_bp = getFileSize(cut_seq);
     // float seq_depth = longassembly_bp / genomesize_bp;
-    float seq_depth = findMedian(ctg_arr, num_taxa);
+    float seq_depth = 0.0;
+    if (ctg_arr_idx > 0) {
+        seq_depth = findMedian(ctg_arr, ctg_arr_idx);
+    } else {
+        int fallback_num = (num_ctg < num_taxa) ? num_ctg : num_taxa;
+        for (int k = 0; k < fallback_num; k++) {
+            ctg_arr[k] = (int)ctgdepth[k].depth;
+        }
+        seq_depth = findMedian(ctg_arr, fallback_num);
+    }
+    if (seq_depth <= 0) seq_depth = 1.0;
     float filter_depth;
 
     log_message(INFO, "Number of contigs: %d", num_ctg);
@@ -418,6 +452,8 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             //     free(pt_bfslinks[i].lctg); free(pt_bfslinks[i].lutr); free(pt_bfslinks[i].rctg); free(pt_bfslinks[i].rutr);
             // }
             free(pt_bfslinks); 
+        } else {
+            log_message(WARNING, "No plastid seed contigs found matching conserved PCGs.");
         }
         free(pt_dynseeds);
 
@@ -454,6 +490,8 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
                 // }
                 free(mt_bfslinks); 
                 // free(mt_mainseeds);
+            } else {
+                log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
             }
             free(mt_dynseeds);
             free(pt_mainseeds);
@@ -493,6 +531,8 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             // }
             free(mt_bfslinks); 
             free(mt_mainseeds);
+        } else {
+            log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
         }
         free(mt_dynseeds);        
 
@@ -529,6 +569,8 @@ void autoMito(const char* exe_path, autoMitoArgs* opts) {
             // }
             free(mt_bfslinks); 
             free(mt_mainseeds);
+        } else {
+            log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
         }
         free(mt_dynseeds);        
     }

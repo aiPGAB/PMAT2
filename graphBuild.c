@@ -80,10 +80,17 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     }
     rewind(graph_file);
 
+    if (num_ctg == 0) {
+        log_message(ERROR, "No contigs found in assembly graph: %s. Please check input data.", opts->assembly_graph);
+        fclose(graph_file);
+        free(line);
+        exit(EXIT_FAILURE);
+    }
 
     Ctglinks* ctglinks = calloc(num_links, sizeof(Ctglinks));
     CtgDepth* ctgdepth = calloc(num_ctg, sizeof(CtgDepth));
     int ctg_arr[200];
+    memset(ctg_arr, 0, sizeof(ctg_arr));
     int ctg_arr_idx = 0;
     int ctglink_idx = 0;
     // int ctg_idx = 0;
@@ -134,7 +141,17 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
     // uint64_t longassembly_bp = getFileSize(cut_seq);
     // float seq_depth = (float)longassembly_bp / (float)genomesize_bp;
 
-    float seq_depth = findMedian(ctg_arr, 200);
+    float seq_depth = 0.0;
+    if (ctg_arr_idx > 0) {
+        seq_depth = findMedian(ctg_arr, ctg_arr_idx);
+    } else {
+        int fallback_num = (num_ctg < 200) ? num_ctg : 200;
+        for (int k = 0; k < fallback_num; k++) {
+            ctg_arr[k] = (int)ctgdepth[k].depth;
+        }
+        seq_depth = findMedian(ctg_arr, fallback_num);
+    }
+    if (seq_depth <= 0) seq_depth = 1.0;
     float filter_depth;
     if (opts->depth != -1) {
         filter_depth = opts->depth;
@@ -177,6 +194,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                             opts->assembly_fna, opts->assembly_graph, "pt", &pt_mainseeds_num, &pt_mainseeds, 0, NULL, opts->taxo, filter_depth, opts->cutseq);
                     
                     free(pt_bfslinks); 
+                } else {
+                    log_message(WARNING, "No plastid seed contigs found matching conserved PCGs.");
                 }
                 free(pt_dynseeds);
 
@@ -208,6 +227,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     optgfa(exe_path, num_dynseeds, &dynseeds, &bfslinks, &num_BFSlinks, ctgdepth, opts->output_file, opts->assembly_fna, opts->assembly_graph, "mt", &mt_mainseeds_num, &mainseeds, pt_mainseeds_num, pt_mainseeds, opts->taxo, filter_depth, opts->cutseq);
                     
                     free(bfslinks);
+                } else {
+                    log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
                 }
                 free(dynseeds);
                 free(pt_mainseeds);
@@ -243,6 +264,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     
                     free(bfslinks);
                     free(mainseeds);
+                } else {
+                    log_message(WARNING, "No plastid seed contigs found matching conserved PCGs.");
                 }
                 free(dynseeds);
             }
@@ -278,6 +301,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     
                     free(bfslinks);
                     free(mainseeds);
+                } else {
+                    log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
                 }
                 free(dynseeds);
 
@@ -313,6 +338,8 @@ void graphBuild(const char* exe_path, graphBuildArgs* opts) {
                     
                     free(bfslinks);
                     free(mainseeds);
+                } else {
+                    log_message(WARNING, "No mitochondrial seed contigs found matching conserved PCGs.");
                 }
                 free(dynseeds);
             }

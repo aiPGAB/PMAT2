@@ -71,6 +71,12 @@ void fq2fa(const char* filename, const char* outfilename) {
     kseq_destroy(seq);
     gzclose(fp);
 
+    if (seq_count == 0) {
+        remove(outfilename);
+        log_message(ERROR, "No valid FASTA/FASTQ sequences found in %s", filename);
+        exit(EXIT_FAILURE);
+    }
+
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
 

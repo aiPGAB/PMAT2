@@ -26,8 +26,6 @@ SOFTWARE.
 #ifndef PMAT_H
 #define PMAT_H
 
-
-
 /* PMAT function: autoMito */
 
 typedef struct {
@@ -54,7 +52,6 @@ typedef struct {
     int8_t kmersize;
 } autoMitoArgs;
 
-
 typedef struct {
     char *graphinfo;     // Graph info file
     char *assembly_graph;  // Contig graph file
@@ -70,12 +67,9 @@ typedef struct {
     int cpu;             // Number of CPUs
 } graphBuildArgs;
 
-
 void autoMito(const char* exe_path, autoMitoArgs* opts);
-
 
 /* PMAT function: graphBuild */
 void graphBuild(const char* exe_path, graphBuildArgs* opts);
-
 
 #endif /* PMAT_H */
