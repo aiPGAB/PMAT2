@@ -101,11 +101,11 @@ void run_Assembly(const char *exec_path, int cpu, const char *assembly_seq, cons
                 "     -ml %d -o %s %s\n\n",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         size_t cmd_len = snprintf(NULL, 0,
-                "setsid %s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                "%s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
         snprintf(command, cmd_len,
-                "setsid %s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                "%s -cpu %d -het -force -sio -m -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
     } else {
         log_info("Running command:\n"
@@ -114,11 +114,11 @@ void run_Assembly(const char *exec_path, int cpu, const char *assembly_seq, cons
                 "     -ml %d -o %s %s\n\n",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
         size_t cmd_len = snprintf(NULL, 0,
-                "setsid %s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                "%s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq) + 1;
         command = malloc(cmd_len);
         snprintf(command, cmd_len,
-                "setsid %s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
+                "%s -cpu %d -het -force -sio -urt -large -s 100 -nobig -mi %d -ml %d -o %s %s",
                 exec_path, cpu, mi, ml, absolute_assembly_output, absolute_assembly_seq);
     }
 

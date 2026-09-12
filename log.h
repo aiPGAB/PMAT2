@@ -34,12 +34,17 @@ SOFTWARE.
 #define ERROR   2
 
 extern FILE* log_output_stream;
+extern FILE* log_file_stream;
 
 void log_section_header(const char* message);
 void log_section_tail(const char* message);
 void log_info(const char* fmt, ...);
 void log_message(int level, const char* fmt, ...);
 void set_log_output(FILE* stream);
+
+int init_log_file(const char* filepath);
+void close_log_file(void);
+void log_header(int argc, char* argv[]);
 
 #endif // LOG_H
 

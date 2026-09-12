@@ -511,6 +511,12 @@ int main(int argc, char *argv[]) {
             
             autoMito_arguments(argc - 1, argv + 1, exe_path, &optauto);
             
+            mkdirfiles(optauto.output_file);
+            char log_filepath[4096];
+            snprintf(log_filepath, sizeof(log_filepath), "%s/PMAT.log", optauto.output_file);
+            init_log_file(log_filepath);
+            log_header(argc, argv);
+
             log_message(INFO, "PMAT v%s", VERSION_PMAT);
             autoMito(exe_path, &optauto);
 
@@ -531,6 +537,12 @@ int main(int argc, char *argv[]) {
             optgraph.cpu = 8;
 
             graphBuild_arguments(argc - 1, argv + 1, &optgraph);
+
+            mkdirfiles(optgraph.output_file);
+            char log_filepath[4096];
+            snprintf(log_filepath, sizeof(log_filepath), "%s/PMAT.log", optgraph.output_file);
+            init_log_file(log_filepath);
+            log_header(argc, argv);
 
             log_message(INFO, "PMAT v%s", VERSION_PMAT);
             graphBuild(exe_path, &optgraph);
@@ -554,9 +566,8 @@ int main(int argc, char *argv[]) {
     /* End of program */
     log_message(INFO, "Task over. bye!");
 
+    close_log_file();
     free(exe_path);
-    
-
 
     return 0;
 }
